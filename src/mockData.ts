@@ -1,5 +1,5 @@
 // src/mockData.ts
-export type Pick = {
+export type PickItem = {
   id?: string
   title: string
   sport?: string
@@ -12,10 +12,16 @@ export type Pick = {
   notes?: string[]
 }
 
+export type DashboardPickGroup = {
+  id: string
+  label: string
+  items: PickItem[]
+}
+
 export type Parlay = {
   id: string
   label: string
-  legs: Pick[]
+  legs: PickItem[]
   probability: number
   payoutMultiplier: number
   expectedValue?: number
@@ -32,12 +38,6 @@ export type SimulationResult = {
   summary: string
 }
 
-type DashboardPickGroup = {
-  id: string
-  label: string
-  items: Pick[]
-}
-
 function product(nums: number[]) {
   return nums.reduce((acc, n) => acc * n, 1)
 }
@@ -48,7 +48,7 @@ function probabilityToPayoutMultiplier(p: number, vig = 0.95) {
   return Math.max(1, decimalOdds * vig)
 }
 
-function normalizePick(item: any): Pick {
+function normalizePick(item: any): PickItem {
   return {
     id: item?.id ?? item?.title ?? Math.random().toString(36).slice(2),
     title: item?.title ?? 'Untitled pick',
@@ -63,44 +63,17 @@ function normalizePick(item: any): Pick {
   }
 }
 
-function parseParlaysArgs(arg1?: any, arg2?: any, arg3?: any, arg4?: any) {
-  let events: any[] = []
-  let maxLegs = 2
-  let topN = 20
-
-  if (Array.isArray(arg1)) {
-    events = arg1
-  } else if (arg1 && typeof arg1 === 'object') {
-    events = Array.isArray(arg1.items) ? arg1.items : []
-  }
-
-  if (typeof arg2 === 'number') {
-    maxLegs = arg2
-  } else if (arg2 && typeof arg2 === 'object') {
-    maxLegs = typeof arg2.maxLegs === 'number' ? arg2.maxLegs : maxLegs
-    topN = typeof arg2.topN === 'number' ? arg2.topN : topN
-  }
-
-  if (typeof arg3 === 'number') {
-    topN = arg3
-  }
-
-  if (typeof arg4 === 'number') {
-    topN = arg4
-  }
-
-  return { events, maxLegs, topN }
-}
-
 export function generateLocalParlays(
   eventsOrInput?: any[],
   arg2?: any,
   arg3?: any,
   arg4?: any
 ): Parlay[] {
-  const { events, maxLegs, topN } = parseParlaysArgs(eventsOrInput, arg2, arg3, arg4)
+  const events = Array.isArray(eventsOrInput) ? eventsOrInput : []
+  const maxLegs = typeof arg2 === 'number' ? arg2 : 2
+  const topN = typeof arg3 === 'number' ? arg3 : 20
 
-  const picks = (events ?? [])
+  const picks = events
     .map(normalizePick)
     .sort((a, b) => (b.fair ?? 0) - (a.fair ?? 0))
     .slice(0, topN)
@@ -171,12 +144,11 @@ export function generateLocalParlays(
 }
 
 export function runLocalSimulation(
-  itemsOrInput?: any[] | Pick[] | Parlay[],
+  itemsOrInput?: any[] | PickItem[] | Parlay[],
   arg2?: number | { trials?: number; stakePerBet?: number },
   arg3?: number
 ): SimulationResult {
   const items = Array.isArray(itemsOrInput) ? itemsOrInput : []
-
   const trials =
     typeof arg2 === 'number'
       ? arg2
@@ -238,8 +210,7 @@ export function runLocalSimulation(
   }
 }
 
-// Example data
-export const samplePicks: Pick[] = [
+export const samplePicks: PickItem[] = [
   {
     id: 'p1',
     title: 'Knicks vs Bucks',
@@ -320,6 +291,8 @@ export function buildCsv(rows: any[] = []) {
 export function buildDashboardCsv(rows: any[] = []) {
   return buildCsv(rows)
 }
+
+export { PickItem as Pick }
 
 export default {
   samplePicks,
