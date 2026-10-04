@@ -5,12 +5,22 @@ export default function ParlaysPage() {
   const [parlays, setParlays] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    setLoading(true)
-    const results = generateLocalParlays(4, 10, 0.6, -0.01)
-    setParlays(results)
-    setLoading(false)
-  }, [])
+useEffect(() => {
+  setLoading(true)
+  const raw = generateLocalParlays(4, 10, 0.6, -0.01)
+  const results = raw.map((parlay) => ({
+    ...parlay,
+    estProb: parlay.probability,
+    estPayout: parlay.payoutMultiplier,
+    totalEV: parlay.expectedValue ?? 0,
+    legs: (parlay.legs ?? []).map((leg: any) => ({
+      ...leg,
+      name: leg.title ?? leg.side ?? 'Pick',
+    })),
+  }))
+  setParlays(results)
+  setLoading(false)
+}, [])
 
   return (
     <div className="container" style={{ padding: '32px 0 80px' }}>
