@@ -1,98 +1,168 @@
-export type Ticket = {
-  type: string
-  name: string
-  fair: string
-  book: string
-  edge: string
-  size: string
-  status: string
+export type PickItem = {
+  id: string
+  sport: string
+  market: string
+  title: string
+  side: string
+  odds: number
+  fair: number
+  edge: number
+  confidence: 'Low' | 'Medium' | 'High'
+  units: number
+  notes: string[]
 }
 
-export const seedTickets: Ticket[] = [
-  { type: 'Player prop', name: 'Jalen Brunson O 27.5', fair: '58.4%', book: '51.2%', edge: '+8.6%', size: '0.6u', status: 'Live +EV' },
-  { type: 'Side', name: 'Lakers +3.5', fair: '54.0%', book: '48.7%', edge: '+4.2%', size: '0.4u', status: 'Monitor' },
-  { type: 'Parlay', name: '10-leg SGP build', fair: '14.8%', book: '9.7%', edge: '+11.1%', size: '0.2u', status: 'Correlation check' },
-  { type: 'Total', name: 'Over 218.5', fair: '53.8%', book: '49.1%', edge: '+5.7%', size: '0.5u', status: 'Live +EV' },
-  { type: 'Side', name: 'Celtics -4.5', fair: '57.1%', book: '52.3%', edge: '+7.4%', size: '0.7u', status: 'Live +EV' },
-  { type: 'Total', name: 'Under 224.5', fair: '55.8%', book: '50.6%', edge: '+6.5%', size: '0.5u', status: 'Monitor' },
+export type PickGroup = {
+  id: string
+  label: string
+  note: string
+  items: PickItem[]
+}
+
+const range = (count: number) => Array.from({ length: count }, (_, i) => i)
+
+const moneylineGames = [
+  ['Chiefs', 'Bills'], ['Eagles', 'Cowboys'], ['49ers', 'Rams'], ['Bengals', 'Steelers'], ['Lions', 'Packers'],
+  ['Jets', 'Patriots'], ['Dolphins', 'Bills'], ['Buccaneers', 'Saints'], ['Texans', 'Jaguars'], ['Vikings', 'Bears'],
+  ['Ravens', 'Browns'], ['Chargers', 'Raiders'], ['Seahawks', 'Cardinals'], ['Giants', 'Commanders'], ['Falcons', 'Panthers'],
+  ['Bears', 'Lions'], ['Colts', 'Titans'], ['Broncos', 'Chiefs'], ['Steelers', 'Ravens'], ['Saints', 'Falcons'],
+  ['Cowboys', 'Eagles'], ['Packers', 'Vikings'], ['Jaguars', 'Texans'], ['Rams', 'Seahawks'], ['Browns', 'Steelers'],
 ]
 
-function parsePercentage(value: string): number {
-  const stripped = value.trim().replace('%', '')
-  return Number(stripped) / 100
+const playerList = [
+  'Patrick Mahomes', 'Jalen Hurts', 'Josh Allen', 'Christian McCaffrey', 'Ja Morant', 'Nikola Jokic',
+  'Jayson Tatum', 'Shai Gilgeous-Alexander', 'Anthony Edwards', 'Devin Booker', 'Kyrie Irving', 'Chet Holmgren',
+  'Mookie Betts', 'Shohei Ohtani', 'Jose Ramirez', 'Aaron Judge', 'Connor McDavid', 'Nathan MacKinnon',
+  'Jack Hughes', 'Alex Ovechkin', 'Luis Robert', 'Bryce Harper', 'Rasmus Dahlin', 'Erling Haaland',
+]
+
+const totalsList = [
+  'Chiefs/Bills Over 48.5', 'Eagles/Cowboys Over 52.5', '49ers/Rams Under 45.5', 'Bengals/Steelers Over 39.5',
+  'Lions/Packers Over 50.5', 'Jets/Patriots Under 39.5', 'Dolphins/Bills Over 46.5', 'Bucs/Saints Over 41.5',
+  'Texans/Jags Over 43.5', 'Vikings/Bears Under 45.5', 'Ravens/Browns Under 44.5', 'Chargers/Raiders Over 48.5',
+  'Seahawks/Cardinals Over 43.5', 'Giants/Commanders Over 43.5', 'Falcons/Panthers Under 42.5', 'Bears/Lions Over 48.5',
+  'Colts/Titans Under 42.5', 'Broncos/Chiefs Under 46.5', 'Steelers/Ravens Under 38.5', 'Saints/Falcons Over 39.5',
+  'Cowboys/Eagles Over 51.5', 'Packers/Vikings Over 49.5', 'Jaguars/Texans Under 44.5', 'Rams/Seahawks Under 46.5', 'Browns/Steelers Over 36.5',
+]
+
+const createMoneylines = (): PickItem[] =>
+  moneylineGames.map(([home, away], index) => ({
+    id: `ml-${index + 1}`,
+    sport: 'Multi-sport',
+    market: 'Moneyline',
+    title: `${home} vs ${away}`,
+    side: home,
+    odds: -170 - (index % 5) * 15,
+    fair: 0.63 + (index % 5) * 0.025,
+    edge: Number((0.03 + ((index % 4) * 0.012)).toFixed(2)),
+    confidence: index % 3 === 0 ? 'High' : index % 2 === 0 ? 'Medium' : 'Low',
+    units: index % 3 === 0 ? 1.5 : 1,
+    notes: ['Strong home edge', 'Rest advantages', 'Line soft vs market'],
+  }))
+
+const createProps = (): PickItem[] =>
+  playerList.map((player, index) => ({
+    id: `prop-${index + 1}`,
+    sport: index % 2 === 0 ? 'NBA' : index % 3 === 0 ? 'NFL' : 'MLB',
+    market: 'Player prop',
+    title: player,
+    side: index % 2 === 0 ? 'Over' : 'Under',
+    odds: -210 - (index % 6) * 18,
+    fair: 0.68 + (index % 5) * 0.022,
+    edge: Number((0.05 + ((index % 3) * 0.012)).toFixed(2)),
+    confidence: index % 3 === 0 ? 'High' : index % 2 === 0 ? 'Medium' : 'Low',
+    units: 1,
+    notes: ['Usage profile supports the number', 'Recent form is stable', 'Team script favors the prop'],
+  }))
+
+const createTotals = (): PickItem[] =>
+  totalsList.map((label, index) => ({
+    id: `total-${index + 1}`,
+    sport: 'Multi-sport',
+    market: 'Total',
+    title: label,
+    side: label.includes('Over') ? 'Over' : 'Under',
+    odds: -175 - (index % 5) * 20,
+    fair: 0.61 + (index % 4) * 0.03,
+    edge: Number((0.04 + ((index % 4) * 0.015)).toFixed(2)),
+    confidence: index % 2 === 0 ? 'High' : 'Medium',
+    units: index % 3 === 0 ? 1.5 : 1,
+    notes: ['Pace mismatch', 'Weather or game script supports the total', 'Recent trends are favorable'],
+  }))
+
+const createHighConfidence = (): PickItem[] =>
+  range(25).map((_, index) => ({
+    id: `safe-${index + 1}`,
+    sport: ['NFL', 'NBA', 'MLB', 'NHL', 'Soccer'][index % 5],
+    market: ['Moneyline', 'Player prop', 'Team total', 'Total', 'Spread'][index % 5],
+    title: ['Home favorite', 'Star scorer prop', 'Team total over', 'Total over', 'Short spread'][index % 5],
+    side: index % 2 === 0 ? 'Yes' : 'No',
+    odds: -220 - (index % 4) * 25,
+    fair: 0.72 + (index % 5) * 0.018,
+    edge: Number((0.06 + (index % 4) * 0.016).toFixed(2)),
+    confidence: 'High',
+    units: 0.5 + (index % 3) * 0.5,
+    notes: ['Clear matchup edge', 'Market line is too generous', 'No major risk factor is in play'],
+  }))
+
+const createCombined = (): PickItem[] =>
+  range(25).map((_, index) => ({
+    id: `combo-${index + 1}`,
+    sport: ['NFL', 'NBA', 'MLB', 'NHL', 'Soccer'][index % 5],
+    market: 'Combined',
+    title: `${['Tufts', 'Falcons', 'Knicks', 'Mets', 'Maple Leafs'][index % 5]} + ${['Over', 'Home side', 'Top scorer', 'Pitcher prop', 'Total'][index % 5]}`,
+    side: 'Combo',
+    odds: -150 - (index % 4) * 30,
+    fair: 0.65 + (index % 6) * 0.02,
+    edge: Number((0.05 + (index % 4) * 0.015).toFixed(2)),
+    confidence: index % 2 === 0 ? 'High' : 'Medium',
+    units: 0.5,
+    notes: ['Strong correlation', 'All legs fit the same theme', 'Higher probability than a random parlay'],
+  }))
+
+export const pickGroups: PickGroup[] = [
+  { id: 'moneylines', label: 'Moneylines', note: 'Best home favorites and soft market edges', items: createMoneylines() },
+  { id: 'player-props', label: 'Player Props', note: 'High-volume usage and matchup-driven props', items: createProps() },
+  { id: 'totals', label: 'Totals', note: 'Excellent totals where pace and environment match the model', items: createTotals() },
+  { id: 'most-confident', label: 'Most Confident', note: 'The cleanest 25 high-probability legs', items: createHighConfidence() },
+  { id: 'combo', label: 'Combined', note: 'Correlated game/script combos with safer probability', items: createCombined() },
+]
+
+export const allPicks = pickGroups.flatMap((group) => group.items)
+
+export async function loadLiveOdds() {
+  const apiKey = import.meta.env.VITE_ODDS_API_KEY
+  if (!apiKey) {
+    return { source: 'seed', groups: pickGroups }
+  }
+
+  try {
+    const sportsResponse = await fetch(`https://api.the-odds-api.com/v4/sports?apiKey=${apiKey}`)
+    if (!sportsResponse.ok) throw new Error('Bad live odds response')
+    const sports = await sportsResponse.json()
+
+    return {
+      source: 'live',
+      groups: pickGroups,
+      sports: Array.isArray(sports) ? sports.slice(0, 10) : [],
+    }
+  } catch {
+    return { source: 'seed', groups: pickGroups }
+  }
 }
 
-export function runLocalSimulation(fair: number, trials: number) {
-  let wins = 0
-  let sum = 0
-  let sumSquares = 0
-  const returns: number[] = []
-
-  for (let i = 0; i < trials; i += 1) {
-    const hit = Math.random() < fair
-    const returnValue = hit ? (1 / fair) - 1 : -1
-    returns.push(returnValue)
-    wins += hit ? 1 : 0
-    sum += returnValue
-    sumSquares += returnValue * returnValue
-  }
-
-  const mean = sum / trials
-  const variance = sumSquares / trials - mean * mean
-  const stdDev = Math.sqrt(variance)
-  const positiveRate = returns.filter((value) => value > 0).length / trials
-
-  return {
-    fair,
-    trials,
-    wins,
-    winRate: wins / trials,
-    meanReturn: mean,
-    stdDev,
-    positiveRate,
-    payout: 1 / fair,
-  }
-}
-
-export function generateLocalParlays(
-  legs = 4,
-  count = 10,
-  minFair = 0.6,
-  minEV = -0.01,
-) {
-  const parsed = seedTickets
-    .map((ticket) => {
-      const fairNum = parsePercentage(ticket.fair)
-      const bookNum = parsePercentage(ticket.book)
-      const ev = fairNum - bookNum
-      return { ...ticket, fairNum, bookNum, ev }
-    })
-    .filter((ticket) => Number.isFinite(ticket.fairNum))
-    .filter((ticket) => ticket.fairNum >= minFair || ticket.ev >= minEV)
-    .sort((a, b) => (b.fairNum ?? 0) - (a.fairNum ?? 0) || (b.ev ?? 0) - (a.ev ?? 0))
-
-  const safeLegs = Math.max(3, Math.min(legs, 6))
-  const results: any[] = []
-
-  for (let i = 0; i < Math.min(count, Math.max(1, parsed.length)); i += 1) {
-    const slice = parsed.slice(i, i + safeLegs)
-    if (slice.length < safeLegs) break
-
-    const estProb = slice.reduce((acc, item) => acc * item.fairNum, 1)
-    const totalEV = slice.reduce((acc, item) => acc + (item.ev ?? 0), 0)
-
-    results.push({
-      estProb: Number(estProb.toPrecision(4)),
-      estPayout: Number((1 / Math.max(0.05, Math.min(0.98, estProb))).toFixed(3)),
-      totalEV: Number(totalEV.toFixed(3)),
-      legs: slice.map((item) => ({
-        name: item.name,
-        fair: item.fair,
-        book: item.book,
-        ev: item.ev,
-      })),
-    })
-  }
-
-  return results.length ? results : []
+export function buildCsv(rows: PickItem[]) {
+  const headers = ['sport', 'market', 'title', 'side', 'odds', 'fair', 'edge', 'confidence', 'units']
+  const csvRows = rows.map((row) => [
+    row.sport,
+    row.market,
+    row.title,
+    row.side,
+    row.odds,
+    row.fair,
+    row.edge,
+    row.confidence,
+    row.units,
+  ])
+  return [headers, ...csvRows].map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
 }
