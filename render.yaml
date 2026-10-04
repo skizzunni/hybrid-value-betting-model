@@ -4,9 +4,10 @@ services:
     name: hybrid-value-betting-model
     repo: https://github.com/skizzunni/hybrid-value-betting-model
     branch: main
-    buildCommand: npm ci && npm run build
+    buildCommand: "npm install --no-audit --no-fund && npm run build"
     staticPublishPath: dist
     routes:
+      # SPA fallback: serve index.html for any client-side route (/tickets, /parlays, ...)
       - type: rewrite
         source: /*
         destination: /index.html
