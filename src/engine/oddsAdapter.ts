@@ -58,6 +58,13 @@ const DEFAULT_SPORTS: Sport[] = [
 ]
 const MARKET_NAMES: Record<string, string> = { h2h: 'moneyline', spreads: 'spread', totals: 'total' }
 
+function timeoutSignal(ms: number): AbortSignal {
+  if (typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms)
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), ms)
+  return controller.signal
+}
+
 function implied(americanOdds: number): number {
   const decimal = americanToDecimal(americanOdds)
   return Number.isFinite(decimal) ? 1 / decimal : NaN
@@ -73,13 +80,15 @@ function mapEvent(event: ApiEvent, model: ProbabilityModel): Leg[] {
   if (!bookmaker) return []
 
   const legs: Leg[] = []
-  for (const market of bookmaker.markets) {
+  for (const market of bookmaker.markets ?? []) {
+    if (!Array.isArray(market.outcomes)) continue
     const mappedMarket = MARKET_NAMES[market.key]
     if (!mappedMarket) continue
-    const totalImplied = market.outcomes.reduce((sum, outcome) => sum + implied(outcome.price), 0)
+    const outcomes = market.outcomes.filter((outcome) => Number.isFinite(implied(outcome.price)))
+    const totalImplied = outcomes.reduce((sum, outcome) => sum + implied(outcome.price), 0)
     if (!(totalImplied > 0)) continue
 
-    for (const outcome of market.outcomes) {
+    for (const outcome of outcomes) {
       const noVig = implied(outcome.price) / totalImplied
       if (!Number.isFinite(noVig)) continue
       const selection = outcome.point === undefined ? outcome.name : `${outcome.name} ${outcome.point}`
@@ -149,11 +158,12 @@ export async function fetchOddsAsLegs(
       }
       const response = await fetch(
         `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(sport)}/odds/?${params}`,
-        { signal: AbortSignal.timeout(10_000) },
+        { signal: timeoutSignal(10_000) },
       )
       if (!response.ok) throw new Error(`Odds API ${response.status}`)
-      const events = await response.json() as ApiEvent[]
-      for (const event of events) legs.push(...mapEvent(event, model))
+      const events = await response.json() as unknown
+      if (!Array.isArray(events)) throw new Error('Unexpected Odds API response')
+      for (const event of events as ApiEvent[]) legs.push(...mapEvent(event, model))
     }
     return legs.length ? legs : sampleLegs(model)
   } catch {

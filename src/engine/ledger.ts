@@ -67,19 +67,25 @@ function getStorage(): Storage | null {
   }
 }
 
+function isEntry(e: unknown): e is LedgerEntry {
+  if (typeof e !== 'object' || e === null) return false
+  const r = e as Record<string, unknown>
+  return Number.isFinite(r.stake) && Number.isFinite(r.payout) && typeof r.hit === 'boolean'
+}
+
 export function loadLedger(): LedgerEntry[] {
   const storage = getStorage()
   if (!storage) return []
   try {
     const parsed: unknown = JSON.parse(storage.getItem(STORAGE_KEY) || '[]')
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed as LedgerEntry[]
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed.filter(isEntry)
     const legacy: unknown = JSON.parse(storage.getItem(LEGACY_STORAGE_KEY) || '[]')
     if (!Array.isArray(legacy)) return []
-    return legacy.map((entry: Record<string, unknown>) => ({
+    return legacy.filter((e): e is Record<string, unknown> => typeof e === 'object' && e !== null).map((entry) => ({
       ...entry,
       id: typeof entry.id === 'string' ? entry.id : String(entry.ticketId ?? 'legacy-ticket'),
-      timestamp: typeof entry.timestamp === 'number' ? entry.timestamp : Date.parse(String(entry.timestamp ?? '')),
-    })) as LedgerEntry[]
+      timestamp: typeof entry.timestamp === 'number' ? entry.timestamp : Date.parse(String(entry.timestamp ?? '')) || 0,
+    })).filter(isEntry)
   } catch {
     return []
   }
