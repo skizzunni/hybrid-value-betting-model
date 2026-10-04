@@ -44,18 +44,20 @@ export type SimulationResult = {
   summary: string
 }
 
-function product(nums: number[]) {
-  return nums.reduce((acc, n) => acc * n, 1)
+function product(nums: number[]): number {
+  return nums.reduce((acc: number, n: number) => acc * n, 1)
 }
 
-function probabilityToPayoutMultiplier(p: number, vig = 0.95) {
+function probabilityToPayoutMultiplier(p: number, vig = 0.95): number {
   if (p <= 0) return 0
   const decimalOdds = 1 / p
   return Math.max(1, decimalOdds * vig)
 }
 
-function normalizePick(item: any): PickItem {
+function normalizePick(item: Partial<PickItem> | null | undefined): PickItem {
   const fair = typeof item?.fair === 'number' ? item.fair : 0.5
+  const notes = Array.isArray(item?.notes) ? item.notes : [item?.note ?? 'Generated pick']
+
   return {
     id: String(item?.id ?? item?.title ?? Math.random().toString(36).slice(2)),
     title: item?.title ?? 'Untitled pick',
@@ -67,8 +69,8 @@ function normalizePick(item: any): PickItem {
     confidence: item?.confidence ?? 'Medium',
     units: typeof item?.units === 'number' ? item.units : 1,
     edge: typeof item?.edge === 'number' ? item.edge : (fair - 0.5) * 100,
-    note: item?.note ?? item?.notes?.[0] ?? 'Generated pick',
-    notes: Array.isArray(item?.notes) ? item.notes : [item?.note ?? 'Generated pick'],
+    note: item?.note ?? notes[0] ?? 'Generated pick',
+    notes,
     value: typeof item?.value === 'number' ? item.value : fair,
     risk: typeof item?.risk === 'number' ? item.risk : 1,
     status: item?.status ?? 'active',
@@ -76,18 +78,18 @@ function normalizePick(item: any): PickItem {
   }
 }
 
-export function generateLocalParlays(...args: any[]): Parlay[] {
-  const first = args[0]
-  const second = args[1]
-  const third = args[2]
-
-  if (typeof first === 'number') {
-    const count = Math.max(1, first)
-    const maxLegs = typeof second === 'number' ? second : 2
+export function generateLocalParlays(
+  sourceOrCount: number | PickItem[] | { items?: PickItem[]; maxLegs?: number; topN?: number } | undefined,
+  maybeMaxLegs?: number,
+  maybeTopN?: number
+): Parlay[] {
+  if (typeof sourceOrCount === 'number') {
+    const count = Math.max(1, sourceOrCount)
+    const maxLegs = typeof maybeMaxLegs === 'number' ? maybeMaxLegs : 2
     const picks = samplePicks.slice(0, Math.min(samplePicks.length, count))
     const parlays: Parlay[] = []
 
-    for (let i = 0; i < picks.length; i++) {
+    for (let i = 0; i < picks.length; i += 1) {
       const pick = picks[i]
       const prob = Math.min(0.9999, Math.max(0.0001, pick.fair))
       const payout = probabilityToPayoutMultiplier(prob)
@@ -102,12 +104,12 @@ export function generateLocalParlays(...args: any[]): Parlay[] {
     }
 
     if (maxLegs >= 2) {
-      for (let i = 0; i < picks.length; i++) {
-        for (let j = i + 1; j < picks.length; j++) {
+      for (let i = 0; i < picks.length; i += 1) {
+        for (let j = i + 1; j < picks.length; j += 1) {
           const legs = [picks[i], picks[j]]
           const prob = Math.max(
             0.000001,
-            product(legs.map((l) => Math.min(0.9999, Math.max(0.0001, l.fair))))
+            product(legs.map((leg: PickItem) => Math.min(0.9999, Math.max(0.0001, leg.fair))))
           )
           const payout = probabilityToPayoutMultiplier(prob)
           parlays.push({
@@ -122,37 +124,26 @@ export function generateLocalParlays(...args: any[]): Parlay[] {
       }
     }
 
-    return parlays.sort((a, b) => b.probability - a.probability)
+    return parlays.sort((a: Parlay, b: Parlay) => b.probability - a.probability)
   }
 
-  const items = Array.isArray(first)
-    ? first
-    : first && Array.isArray(first.items)
-      ? first.items
+  const items: PickItem[] = Array.isArray(sourceOrCount)
+    ? sourceOrCount
+    : sourceOrCount && Array.isArray(sourceOrCount.items)
+      ? sourceOrCount.items
       : []
 
-  const maxLegs =
-    typeof second === 'number'
-      ? second
-      : typeof second === 'object' && second?.maxLegs
-        ? second.maxLegs
-        : 2
-
-  const topN =
-    typeof third === 'number'
-      ? third
-      : typeof second === 'object' && second?.topN
-        ? second.topN
-        : 20
+  const maxLegs = typeof maybeMaxLegs === 'number' ? maybeMaxLegs : 2
+  const topN = typeof maybeTopN === 'number' ? maybeTopN : 20
 
   const picks = items
-    .map(normalizePick)
-    .sort((a, b) => b.fair - a.fair)
+    .map((item: PickItem) => normalizePick(item))
+    .sort((a: PickItem, b: PickItem) => b.fair - a.fair)
     .slice(0, topN)
 
   const parlays: Parlay[] = []
 
-  for (let i = 0; i < picks.length; i++) {
+  for (let i = 0; i < picks.length; i += 1) {
     const pick = picks[i]
     const prob = Math.min(0.9999, Math.max(0.0001, pick.fair))
     const payout = probabilityToPayoutMultiplier(prob)
@@ -167,12 +158,12 @@ export function generateLocalParlays(...args: any[]): Parlay[] {
   }
 
   if (maxLegs >= 2) {
-    for (let i = 0; i < picks.length; i++) {
-      for (let j = i + 1; j < picks.length; j++) {
+    for (let i = 0; i < picks.length; i += 1) {
+      for (let j = i + 1; j < picks.length; j += 1) {
         const legs = [picks[i], picks[j]]
         const prob = Math.max(
           0.000001,
-          product(legs.map((l) => Math.min(0.9999, Math.max(0.0001, l.fair))))
+          product(legs.map((leg: PickItem) => Math.min(0.9999, Math.max(0.0001, leg.fair))))
         )
         const payout = probabilityToPayoutMultiplier(prob)
         parlays.push({
@@ -187,24 +178,24 @@ export function generateLocalParlays(...args: any[]): Parlay[] {
     }
   }
 
-  return parlays.sort((a, b) => b.probability - a.probability)
+  return parlays.sort((a: Parlay, b: Parlay) => b.probability - a.probability)
 }
 
-export function runLocalSimulation(...args: any[]): SimulationResult {
-  const first = args[0]
-  const second = args[1]
-  const third = args[2]
-
-  if (typeof first === 'number') {
-    const trials = Math.max(1, first)
-    const stakePerBet = typeof second === 'number' ? second : 1
+export function runLocalSimulation(
+  source: number | PickItem[] | undefined,
+  arg2?: number | { trials?: number; stakePerBet?: number },
+  arg3?: number
+): SimulationResult {
+  if (typeof source === 'number') {
+    const trials = Math.max(1, source)
+    const stakePerBet = typeof arg2 === 'number' ? arg2 : 1
 
     let wins = 0
     let losses = 0
     let totalStake = 0
     let totalReturn = 0
 
-    for (let t = 0; t < trials; t++) {
+    for (let t = 0; t < trials; t += 1) {
       for (const pick of samplePicks) {
         const p = Math.min(0.999999, Math.max(0, pick.fair))
         const mult = probabilityToPayoutMultiplier(p)
@@ -234,18 +225,29 @@ export function runLocalSimulation(...args: any[]): SimulationResult {
     }
   }
 
-  const items = Array.isArray(first) ? first : []
-  const trials = typeof second === 'number' ? second : 5000
-  const stakePerBet = typeof third === 'number' ? third : 1
+  const items: PickItem[] = Array.isArray(source) ? source : []
+  const trials =
+    typeof arg2 === 'number'
+      ? arg2
+      : typeof arg2 === 'object' && arg2
+        ? arg2.trials ?? 5000
+        : 5000
+
+  const stakePerBet =
+    typeof arg3 === 'number'
+      ? arg3
+      : typeof arg2 === 'object' && arg2
+        ? arg2.stakePerBet ?? 1
+        : 1
 
   let wins = 0
   let losses = 0
   let totalStake = 0
   let totalReturn = 0
 
-  for (let t = 0; t < trials; t++) {
-    for (const it of items) {
-      const normalized = normalizePick(it)
+  for (let t = 0; t < trials; t += 1) {
+    for (const item of items) {
+      const normalized = normalizePick(item)
       const p = Math.min(0.999999, Math.max(0, normalized.fair))
       const mult = probabilityToPayoutMultiplier(p)
       totalStake += stakePerBet
@@ -342,9 +344,9 @@ export function getPickGroups(): DashboardPickGroup[] {
   ]
 }
 
-export const pickGroups = getPickGroups()
+export const pickGroups: DashboardPickGroup[] = getPickGroups()
 
-export function buildDashboard() {
+export function buildDashboard(): { groups: DashboardPickGroup[]; title: string; generatedAt: string } {
   return {
     groups: getPickGroups(),
     title: 'Dashboard',
@@ -352,24 +354,26 @@ export function buildDashboard() {
   }
 }
 
-export function buildDashboardData() {
+export function buildDashboardData(): ReturnType<typeof buildDashboard> {
   return buildDashboard()
 }
 
-export function pickGrid() {
+export function pickGrid(): DashboardPickGroup[] {
   return getPickGroups()
 }
 
-export function buildCsv(rows: any[] = []) {
+export function buildCsv(rows: Array<Record<string, unknown>> = []): string {
   if (!rows.length) return ''
-  const headers = Object.keys(rows[0])
-  const csvLines = [
+  const headers = Object.keys(rows[0] as Record<string, unknown>)
+  const csvLines: string[] = [
     headers.join(','),
-    ...rows.map((row) =>
+    ...rows.map((row: Record<string, unknown>) =>
       headers
-        .map((header) => {
-          const val = row[header]
-          return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : String(val ?? '')
+        .map((header: string) => {
+          const value = row[header]
+          return typeof value === 'string'
+            ? `"${value.replace(/"/g, '""')}"`
+            : String(value ?? '')
         })
         .join(',')
     ),
@@ -377,7 +381,7 @@ export function buildCsv(rows: any[] = []) {
   return csvLines.join('\n')
 }
 
-export function buildDashboardCsv(rows: any[] = []) {
+export function buildDashboardCsv(rows: Array<Record<string, unknown>> = []): string {
   return buildCsv(rows)
 }
 
