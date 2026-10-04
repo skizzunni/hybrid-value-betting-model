@@ -1,4 +1,11 @@
 {
-  "generated_at": null,
-  "groups": []
+  "generated_at": "2026-10-04T08:45:38.501Z",
+  "groups": [
+    {
+      "id": "most-confident",
+      "label": "Most Confident",
+      "note": "Highest-probability picks across all sports",
+      "items": []
+    }
+  ]
 }
