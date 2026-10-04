@@ -17,12 +17,19 @@ export type PickItem = {
   label: string
 }
 
-export type DashboardPickGroup = {
+export type Parlay = {
   id: string
   label: string
-  note: string
-  items: PickItem[]
+  legs: PickItem[]
+  probability: number
+  payoutMultiplier: number
+  expectedValue?: number
 }
+
+export const samplePicks: PickItem[] = [...]
+export const pickGroups = getPickGroups()
+export function generateLocalParlays(...args: any[]): Parlay[] { ... }
+export function runLocalSimulation(...args: any[]): SimulationResult { ... }
 
 export type Parlay = {
   id: string
