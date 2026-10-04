@@ -1,8 +1,8 @@
 import express from 'express'
 import cors from 'cors'
-import { initDb, getTickets, updateTicketResult, getMetrics } from './store'
-import { runSimulation } from './simulate'
-import { generateHighProbParlays } from './parlay'
+import { initDb, getTickets, updateTicketResult, getMetrics } from './store.js'
+import { runSimulation } from './simulate.js'
+import { generateHighProbParlays } from './parlay.js'
 
 const app = express()
 app.use(cors())
