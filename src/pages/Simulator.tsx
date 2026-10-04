@@ -1,51 +1,51 @@
-import React, { useState } from 'react'
-import { runLocalSimulation } from '../mockData'
+import React from 'react'
+import { pickGroups, buildCsv } from '../mockData'
 
-export default function Simulator() {
-  const [fair, setFair] = useState(0.55)
-  const [trials, setTrials] = useState(10000)
-  const [result, setResult] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
+export default function Dashboard() {
+  const groups = pickGroups
 
-  async function runSim() {
-    setLoading(true)
-    const data = runLocalSimulation(fair, trials)
-    setResult(data)
-    setLoading(false)
+  function downloadCsv() {
+    const rows = groups.flatMap((g) => g.items.map((it) => ({ group: g.label, ...it })))
+    const csv = buildCsv(rows)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'picks.csv'
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
     <div className="container page-space">
       <section className="section-panel board-panel">
         <div className="section-head">
-          <h2>Simulation engine</h2>
+          <h2>Dashboard</h2>
         </div>
 
-        <div className="sim-grid">
-          <div className="sim-controls">
-            <label>
-              Fair probability
-              <input type="number" value={fair} min={0.01} max={0.99} step={0.01} onChange={(e) => setFair(Number(e.target.value))} />
-            </label>
+        <div style={{ marginTop: 16 }}>
+          <button className="primary-btn" onClick={downloadCsv}>Download CSV</button>
+        </div>
 
-            <label>
-              Trial count
-              <input type="number" value={trials} min={100} step={100} onChange={(e) => setTrials(Number(e.target.value))} />
-            </label>
-
-            <div className="cta-row">
-              <button className="primary-btn" onClick={runSim} disabled={loading}>{loading ? 'Running...' : 'Run sim'}</button>
-              <button className="secondary-btn" onClick={() => setResult(null)}>Clear</button>
+        <div style={{ marginTop: 16 }}>
+          {groups.map((group) => (
+            <div key={group.id} style={{ marginBottom: 20 }}>
+              <h3 style={{ marginBottom: 8 }}>{group.label}</h3>
+              <div style={{ display: 'grid', gap: 8 }}>
+                {group.items.map((it) => (
+                  <div key={it.id} style={{ padding: 10, border: '1px solid rgba(148,163,184,0.12)', borderRadius: 8 }}>
+                    <strong>{it.label}</strong>
+                    <div style={{ color: '#94a3b8' }}>{it.note}</div>
+                    <div style={{ marginTop: 6 }}>
+                      <span style={{ marginRight: 12 }}>Fair: {it.fair}</span>
+                      <span style={{ marginRight: 12 }}>Odds: {it.odds}</span>
+                      <span>Units: {it.units}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-
-          <div className="sim-output">
-            {result ? (
-              <pre>{JSON.stringify(result, null, 2)}</pre>
-            ) : (
-              <div className="empty-state">No simulation run yet. Set fair probability and click Run sim.</div>
-            )}
-          </div>
+          ))}
         </div>
       </section>
     </div>
