@@ -5,7 +5,7 @@ import { topStraightPlays } from '../engine/staking'
 import { samplePicks } from '../mockData'
 import { AdjustedProbabilityModel, loadLearnedAdjustments, loadLearningEnabled, saveLearningEnabled } from '../engine/postmortem/learning'
 
-export const MIN_PROBABILITY = 0.55
+export const MIN_PROBABILITY = 0.52
 
 export type DataSource = 'live' | 'demo'
 
