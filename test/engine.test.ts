@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import {
   buildTicketFromSpec,
   buildWinnableTicket,
@@ -8,6 +8,8 @@ import {
 } from '../src/engine/ticketBuilder'
 import { recommendStakeForTicket, tierForLeg } from '../src/engine/staking'
 import { computeCLV, noVigProbability } from '../src/engine/clv'
+import { classifyLeg, filterByEdgeOnly, topUnderdogValue } from '../src/engine/underdog'
+import { clearLedger, getLedgerSummary, getSidedResults, loadLedger, saveTicketResult, type LedgerEntry } from '../src/engine/ledger'
 
 const spec = { id: 'test', name: 'Test', strategy: 'highestProbability' as const }
 
@@ -106,5 +108,88 @@ describe('closing line value', () => {
     expect(noVigProbability(-110)).toBeCloseTo(110 / 210)
     expect(computeCLV(110, -110)).toBeCloseTo((100 / 210 - 110 / 210) * 100)
     expect(computeCLV(110, [-110, -110])).toBeCloseTo(computeCLV(110, -110))
+  })
+})
+
+describe('underdog value and bet modes', () => {
+  const leg = (id: string, americanOdds: number, modelProbability: number): Leg => ({
+    ...legs(1)[0], id, gameId: `g-${id}`, teams: [`h-${id}`, `a-${id}`], americanOdds, modelProbability,
+  })
+  const pool = [
+    leg('dog-big', 200, 0.36),
+    leg('dog-small', 150, 0.42),
+    leg('dog-neg', 150, 0.38),
+    leg('fav', -150, 0.65),
+    leg('fav-bad', -200, 0.6),
+  ]
+
+  it('filterByEdgeOnly ignores probability but needs positive edge', () => {
+    const ids = filterByEdgeOnly(pool).map((l) => l.id)
+    expect(ids).toEqual(['dog-big', 'dog-small', 'fav'])
+  })
+
+  it('topUnderdogValue returns underdogs sorted by edge', () => {
+    const top = topUnderdogValue(pool)
+    expect(top.map((l) => l.id)).toEqual(['dog-big', 'dog-small', 'dog-neg'])
+    expect(topUnderdogValue(pool, 1)).toHaveLength(1)
+  })
+
+  it('classifyLeg tags favorites, underdogs and neutral prices', () => {
+    expect(classifyLeg(leg('a', 150, 0.5))).toBe('underdog')
+    expect(classifyLeg(leg('b', -200, 0.5))).toBe('favorite')
+    expect(classifyLeg(leg('c', -110, 0.5))).toBe('neutral')
+  })
+
+  it('straights use edge only while parlays keep the 55% floor', () => {
+    const straight = buildTicketFromSpec(pool, spec, { mode: 'straights' })
+    expect(straight.betType).toBe('straight')
+    expect(straight.legs.map((l) => l.id)).toEqual(['fav', 'dog-big', 'dog-small'])
+    expect(straight.sideMix).toEqual({ favorite: 1, underdog: 2, neutral: 0 })
+    const parlay = buildTicketFromSpec(pool, spec, { mode: 'parlays' })
+    expect(parlay.betType).toBe('parlay')
+    expect(parlay.legs.map((l) => l.id)).toEqual(['fav', 'fav-bad'])
+  })
+
+  it('mixed menu contains parlays plus a straight ticket; parlays-only does not', () => {
+    expect(generateDailyMenu(pool).some((t) => t.betType === 'straight')).toBe(true)
+    expect(generateDailyMenu(pool, { mode: 'parlays' }).some((t) => t.betType === 'straight')).toBe(false)
+    expect(generateDailyMenu(pool, { mode: 'straights' }).every((t) => t.betType === 'straight')).toBe(true)
+  })
+})
+
+describe('ledger by side', () => {
+  const entry = (side: 'favorite' | 'underdog', stake: number, payout: number): LedgerEntry => ({
+    id: `${side}-${payout}`, timestamp: 0, ticketName: 't', legCount: 1, stake, hit: payout > 0, payout, side,
+  })
+  const store = new Map<string, string>()
+  const win = globalThis as unknown as { window?: unknown }
+  win.window = {
+    localStorage: {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    },
+  }
+  afterEach(() => clearLedger())
+
+  it('computes ROI per side', () => {
+    const ledger = [entry('favorite', 10, 0), entry('favorite', 10, 15), entry('underdog', 10, 30), entry('underdog', 10, 0)]
+    const sided = getSidedResults(ledger)
+    expect(sided.favorite.roi).toBeCloseTo(-0.25)
+    expect(sided.underdog.roi).toBeCloseTo(0.5)
+    expect(sided.combined.count).toBe(4)
+    const summary = getLedgerSummary(ledger)
+    expect(summary.underdogStats).toEqual({ count: 2, hits: 1, roi: 0.5 })
+    expect(summary.favoriteStats.hits).toBe(1)
+  })
+
+  it('saves and retrieves a result with side data', () => {
+    saveTicketResult({ name: 'Dog', legs: [{}] }, 10, true, 25, undefined, {
+      side: 'underdog', legs: [{ side: 'underdog', hit: true }], legsHit: 1,
+    })
+    const [saved] = loadLedger()
+    expect(saved.side).toBe('underdog')
+    expect(getLedgerSummary().partsWon).toBe(1)
+    expect(getSidedResults().underdog.count).toBe(1)
   })
 })

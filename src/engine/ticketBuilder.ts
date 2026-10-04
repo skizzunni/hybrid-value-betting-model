@@ -14,6 +14,8 @@
  * carry explanatory notes.
  */
 
+import { filterByEdgeOnly, legEdge, sideMixOf } from './underdog'
+
 export type Sport = string
 
 export interface Leg {
@@ -25,18 +27,29 @@ export interface Leg {
   selection: string
   americanOdds: number
   modelProbability: number
+  /** Favorite/underdog classification from the american odds. */
+  side?: 'favorite' | 'underdog'
   /** Optional edge override; defaults to modelProbability - implied probability. */
   edge?: number
 }
 
 export type TicketStrategy = 'highestProbability' | 'highestPayout' | 'sameGameHeavy' | 'mixed'
-export type TicketTier = 'lottery' | 'winnable'
+export type TicketTier = 'lottery' | 'winnable' | 'straight'
+export type TicketMode = 'parlays' | 'straights' | 'mixed'
+export type BetType = 'straight' | 'parlay' | 'mixed'
+export interface SideMix {
+  favorite: number
+  underdog: number
+  neutral: number
+}
 
 export interface Ticket {
   id: string
   name: string
   strategy: TicketStrategy
   tier: TicketTier
+  betType: BetType
+  sideMix: SideMix
   legs: Leg[]
   targetLegs: number
   combinedProbability: number
@@ -63,6 +76,12 @@ export interface DailyMenuOptions {
   winnableMinProbability?: number
   winnableMaxProbability?: number
   specs?: TicketSpec[]
+  /** 'parlays' | 'straights' | 'mixed' (default 'mixed'). */
+  mode?: TicketMode
+  /** Straights only: minimum edge (default 0.005). */
+  minEdge?: number
+  /** Straights only: number of plays on the straight ticket (default 10). */
+  straightCount?: number
 }
 
 export const DEFAULT_SPECS: TicketSpec[] = [
@@ -101,11 +120,6 @@ export function combinedProbabilityOfLegs(legs: Leg[]): number {
 
 export function payoutDecimalOfLegs(legs: Leg[]): number {
   return legs.reduce((acc, l) => acc * safeDecimal(l.americanOdds), 1)
-}
-
-function legEdge(leg: Leg): number {
-  if (typeof leg.edge === 'number') return leg.edge
-  return leg.modelProbability - 1 / safeDecimal(leg.americanOdds)
 }
 
 function norm(s: string): string {
@@ -222,6 +236,8 @@ function makeTicket(spec: TicketSpec, tier: TicketTier, legs: Leg[], target: num
     name: `${spec.name} (${tier})`,
     strategy: spec.strategy,
     tier,
+    betType: 'parlay',
+    sideMix: sideMixOf(legs),
     legs,
     targetLegs: target,
     combinedProbability: combinedProbabilityOfLegs(legs),
@@ -230,8 +246,48 @@ function makeTicket(spec: TicketSpec, tier: TicketTier, legs: Leg[], target: num
   }
 }
 
-/** Lottery ticket: aims for spec.targetLegs (default 25) legs. */
+/**
+ * Straights: independent single bets chosen by edge alone (no probability floor,
+ * no per-game/team caps). Only contradictory legs are dropped.
+ */
+export function buildStraightTicket(candidates: Leg[], spec: TicketSpec, options?: DailyMenuOptions): Ticket {
+  const count = options?.straightCount ?? spec.targetLegs ?? 10
+  const seen = new Set<string>()
+  const pool = filterByEdgeOnly(candidates, options?.minEdge).filter((l) => {
+    if (seen.has(l.id)) return false
+    seen.add(l.id)
+    return true
+  })
+  pool.sort((a, b) => legEdge(b) - legEdge(a) || a.id.localeCompare(b.id))
+  const legs: Leg[] = []
+  for (const leg of pool) {
+    if (legs.length >= count) break
+    if (!legs.some((c) => conflicts(c, leg))) legs.push(leg)
+  }
+  const n = legs.length
+  const notes = [
+    'Straights are independent single bets selected by edge only; there is no probability floor and underdogs are allowed.',
+    'Probability and payout shown are per-bet averages, not a parlay product.',
+  ]
+  if (n === 0) notes.push('No value found: no leg has a positive edge at the offered price.')
+  return {
+    id: `${spec.id}-straight`,
+    name: `${spec.name} (straights)`,
+    strategy: spec.strategy,
+    tier: 'straight',
+    betType: 'straight',
+    sideMix: sideMixOf(legs),
+    legs,
+    targetLegs: count,
+    combinedProbability: n ? legs.reduce((a, l) => a + l.modelProbability, 0) / n : 0,
+    payoutDecimal: n ? legs.reduce((a, l) => a + safeDecimal(l.americanOdds), 0) / n : 1,
+    notes,
+  }
+}
+
+/** Lottery ticket: aims for spec.targetLegs (default 25) legs. With mode 'straights', builds a straight ticket instead. */
 export function buildTicketFromSpec(candidates: Leg[], spec: TicketSpec, options?: DailyMenuOptions): Ticket {
+  if (options?.mode === 'straights') return buildStraightTicket(candidates, spec, options)
   const o = resolve(options)
   const target = spec.targetLegs ?? o.lotteryLegs
   const legs = assemble(rank(eligible(candidates, o), spec), target, o)
@@ -269,15 +325,25 @@ export function buildWinnableTicket(candidates: Leg[], spec: TicketSpec, options
   return makeTicket(spec, 'winnable', legs, best?.k ?? o.winnableMinK, notes)
 }
 
-/** One lottery and one winnable ticket per spec. */
+/**
+ * Parlays: one lottery and one winnable ticket per spec (unchanged rules).
+ * Straights: a single edge-ranked straight ticket (none if no leg has edge).
+ * Mixed (default): both, with the straight ticket last.
+ */
 export function generateDailyMenu(candidates: Leg[], opts?: DailyMenuOptions): Ticket[] {
+  const mode = opts?.mode ?? 'mixed'
   const specs = opts?.specs ?? DEFAULT_SPECS
-  return specs.flatMap((spec) => [buildTicketFromSpec(candidates, spec, opts), buildWinnableTicket(candidates, spec, opts)])
+  const parlays = mode === 'straights'
+    ? []
+    : specs.flatMap((spec) => [buildTicketFromSpec(candidates, spec, { ...opts, mode: 'parlays' }), buildWinnableTicket(candidates, spec, opts)])
+  if (mode === 'parlays') return parlays
+  const straight = buildStraightTicket(candidates, { id: 'edge', name: 'Best Edge', strategy: 'highestProbability' }, opts)
+  return straight.legs.length || mode === 'straights' ? [...parlays, straight] : parlays
 }
 
 export function formatTicketReport(ticket: Ticket): string {
   const lines = [
-    `${ticket.name} [${ticket.tier}] - ${ticket.legs.length}/${ticket.targetLegs} legs`,
+    `${ticket.name} [${ticket.tier}/${ticket.betType}] - ${ticket.legs.length}/${ticket.targetLegs} legs`,
     `Combined probability: ${(ticket.combinedProbability * 100).toFixed(2)}%`,
     `Payout (decimal): ${ticket.payoutDecimal.toFixed(2)}x`,
   ]

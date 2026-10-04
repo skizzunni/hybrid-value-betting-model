@@ -10,12 +10,41 @@ import { SkeletonCards } from '../components/Skeleton'
 import { saveTicketResult } from '../engine/ledger'
 import { recommendStakeForTicket, tierForLeg } from '../engine/staking'
 import type { Leg, Ticket } from '../engine/ticketBuilder'
+import { classifyLeg, filterByEdgeOnly, isHighValue, legEdge, sideMixOf, topUnderdogValue, type Side } from '../engine/underdog'
 import { americanOdds, currency, multiplier, oneInN, probability, signedCurrency, signedPercent, sportLabel } from '../lib/format'
 import { correlationSummary, edgeVsNoVig, riskRating, ticketEV } from '../lib/metrics'
 import { useSlate } from '../lib/slate'
 
 type SortKey = 'probability' | 'ev' | 'payout' | 'legs'
 type TierFilter = 'all' | 'winnable' | 'lottery'
+type ViewMode = 'all' | 'parlays' | 'straights' | 'underdogs'
+
+const MODES: { value: ViewMode; label: string }[] = [
+  { value: 'all', label: 'All bets' },
+  { value: 'parlays', label: 'Parlays only' },
+  { value: 'straights', label: 'Straights only' },
+  { value: 'underdogs', label: 'Underdogs only' },
+]
+
+const AMBER = '#f59e0b'
+const sideMixText = (mix: { favorite: number; underdog: number; neutral: number }) =>
+  `${mix.underdog} underdogs, ${mix.favorite} favorites, ${mix.neutral} neutral`
+
+function straightTicketOf(leg: Leg): Ticket {
+  return {
+    id: `straight-${leg.id}`,
+    name: leg.selection,
+    strategy: 'highestProbability',
+    tier: 'straight',
+    betType: 'straight',
+    sideMix: sideMixOf([leg]),
+    legs: [leg],
+    targetLegs: 1,
+    combinedProbability: leg.modelProbability,
+    payoutDecimal: 1 + (leg.americanOdds > 0 ? leg.americanOdds / 100 : 100 / Math.abs(leg.americanOdds)),
+    notes: [],
+  }
+}
 
 const SORTS: Record<SortKey, { label: string; value: (t: Ticket) => number }> = {
   probability: { label: 'Combined probability', value: (t) => t.combinedProbability },
@@ -45,6 +74,7 @@ function LogResultForm({ ticket, suggestedStake, onDone }: { ticket: Ticket; sug
   const [hit, setHit] = useState(false)
   const [payout, setPayout] = useState('')
   const [saved, setSaved] = useState(false)
+  const [side, setSide] = useState<Side>(ticket.legs.length === 1 ? classifyLeg(ticket.legs[0]) : 'neutral')
   const id = `${ticket.id}-${ticket.tier}`
 
   function submit(event: FormEvent) {
@@ -52,7 +82,18 @@ function LogResultForm({ ticket, suggestedStake, onDone }: { ticket: Ticket; sug
     const stakeNum = Number(stake)
     if (!(stakeNum > 0)) return
     const payoutNum = hit ? (payout === '' ? stakeNum * ticket.payoutDecimal : Number(payout)) : 0
-    saveTicketResult(ticket, stakeNum, hit, Number.isFinite(payoutNum) ? payoutNum : 0)
+    const single = ticket.legs.length === 1 ? ticket.legs[0] : undefined
+    saveTicketResult(ticket, stakeNum, hit, Number.isFinite(payoutNum) ? payoutNum : 0, undefined, {
+      side,
+      legs: ticket.legs.map((leg) => ({
+        side: single ? side : classifyLeg(leg),
+        americanOdds: leg.americanOdds,
+        modelProbability: leg.modelProbability,
+        ...(single ? { hit } : {}),
+      })),
+      legsHit: hit ? ticket.legs.length : undefined,
+      takenEdge: single ? legEdge(single) : undefined,
+    })
     setSaved(true)
   }
 
@@ -70,6 +111,14 @@ function LogResultForm({ ticket, suggestedStake, onDone }: { ticket: Ticket; sug
       <label className="field" htmlFor={`${id}-stake`}>
         Stake ($)
         <input id={`${id}-stake`} className="input" type="number" min="0" step="0.01" value={stake} onChange={(e) => setStake(e.target.value)} required />
+      </label>
+      <label className="field" htmlFor={`${id}-side`}>
+        Side
+        <select id={`${id}-side`} className="input" value={side} onChange={(e) => setSide(e.target.value as Side)}>
+          <option value="favorite">Favorite</option>
+          <option value="underdog">Underdog</option>
+          <option value="neutral">Neutral</option>
+        </select>
       </label>
       <label className="field" htmlFor={`${id}-outcome`}>
         Outcome
@@ -130,6 +179,8 @@ function TicketCard({ ticket, bankroll }: { ticket: Ticket; bankroll: number }) 
         <div className="ticket-prob">{probability(ticket.combinedProbability)}</div>
         <div className="ticket-sub">combined probability · {oneInN(ticket.combinedProbability)}</div>
 
+        <div className="leg-sub">Side mix: {sideMixText(ticket.sideMix)}</div>
+
         <div className="metrics">
           <div><div className="metric-label">Combined odds</div><div className="metric-value">{multiplier(ticket.payoutDecimal)}</div></div>
           <div><div className="metric-label">EV per $1</div><div className={`metric-value ${ev >= 0 ? 'tone-positive' : 'tone-negative'}`}>{signedCurrency(ev)}</div></div>
@@ -181,6 +232,8 @@ export default function TicketsPage() {
   const [sport, setSport] = useState('all')
   const [tier, setTier] = useState<TierFilter>('all')
   const [sort, setSort] = useState<SortKey>('probability')
+  const [mode, setMode] = useState<ViewMode>('all')
+  const [loggingLeg, setLoggingLeg] = useState<Leg | null>(null)
 
   const sports = useMemo(() => [...new Set(slate.legs.map((l) => l.sport))].sort(), [slate.legs])
 
@@ -192,6 +245,14 @@ export default function TicketsPage() {
     [slate.tickets, sport, tier, sort],
   )
   const visibleStraight = slate.straightPlays.filter((l) => sport === 'all' || l.sport === sport)
+  const showParlays = mode === 'all' || mode === 'parlays'
+  const showStraights = mode === 'all' || mode === 'straights'
+  const showUnderdogSection = mode !== 'parlays'
+  const edgeLegs = useMemo(() => filterByEdgeOnly(slate.legs).filter((l) => sport === 'all' || l.sport === sport), [slate.legs, sport])
+  const underdogRows = useMemo(
+    () => (mode === 'straights' ? [...edgeLegs].sort((a, b) => legEdge(b) - legEdge(a)).slice(0, 10) : topUnderdogValue(edgeLegs, 10)),
+    [edgeLegs, mode],
+  )
   const groups: Array<{ tier: 'winnable' | 'lottery'; title: string; items: Ticket[] }> = [
     { tier: 'winnable', title: 'Winnable tickets', items: visibleTickets.filter((t) => t.tier === 'winnable') },
     { tier: 'lottery', title: 'Lottery tickets', items: visibleTickets.filter((t) => t.tier === 'lottery') },
@@ -245,6 +306,48 @@ export default function TicketsPage() {
       render: (l) =>
         recommendStakeForTicket({ tier: 'straight', legs: [l], combinedProbability: l.modelProbability }, bankroll).units.toFixed(2),
     },
+  ]
+
+  const underdogColumns: Column<Leg>[] = [
+    {
+      key: 'sel',
+      header: 'Selection',
+      render: (l) => (
+        <>
+          <div className="leg-title">{l.selection}</div>
+          <div className="leg-sub">{l.teams.join(' vs ')} · {sportLabel(l.sport)}</div>
+        </>
+      ),
+    },
+    { key: 'odds', header: 'Odds', align: 'right', mono: true, render: (l) => americanOdds(l.americanOdds) },
+    { key: 'p', header: 'Model prob', align: 'right', render: (l) => probability(l.modelProbability) },
+    {
+      key: 'edge',
+      header: 'Edge',
+      align: 'right',
+      render: (l) => (
+        <>
+          <strong>{signedPercent(legEdge(l), 2)}</strong>
+          {isHighValue(l) && <> <Badge kind="high-value" >High value</Badge></>}
+        </>
+      ),
+    },
+    { key: 'tier', header: 'Tier', render: (l) => <Badge kind={tierForLeg(l)} /> },
+    {
+      key: 'units',
+      header: 'Units',
+      align: 'right',
+      render: (l) => recommendStakeForTicket({ tier: 'straight', legs: [l], combinedProbability: l.modelProbability }, bankroll).units.toFixed(2),
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      render: (l) => {
+        const side = classifyLeg(l)
+        return <strong style={{ color: side === 'underdog' ? AMBER : undefined }}>{side === 'underdog' ? 'UNDERDOG' : side === 'favorite' ? 'FAVORITE' : 'NEUTRAL'}</strong>
+      },
+    },
+    { key: 'log', header: '', render: (l) => <button type="button" className="btn btn-sm" onClick={() => setLoggingLeg(l)}>Log result</button> },
   ]
 
   return (
@@ -314,16 +417,55 @@ export default function TicketsPage() {
             </div>
           </div>
 
-          <h2 className="section-title">Straight plays</h2>
-          {visibleStraight.length === 0 ? (
-            <EmptyState title="No straight plays" description="No legs clear the probability floor for this filter." />
-          ) : (
-            <Card padded={false}>
-              <DataTable columns={straightColumns} rows={visibleStraight} rowKey={(l) => l.id} caption="Straight plays" />
-            </Card>
+          <div className="toolbar-group" role="radiogroup" aria-label="Bet mode">
+            Mode
+            <div className="chips">
+              {MODES.map((m) => (
+                <label key={m.value} className="chip" style={{ cursor: 'pointer' }}>
+                  <input type="radio" name="mode" value={m.value} checked={mode === m.value} onChange={() => setMode(m.value)} /> {m.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {showUnderdogSection && (
+            <section aria-labelledby="underdog-h">
+              <h2 className="section-title" id="underdog-h" style={{ color: AMBER }}>Underdog value</h2>
+              <p className="leg-sub">
+                Straights are chosen by edge (model probability minus implied probability), not win rate. No probability floor applies.
+              </p>
+              {underdogRows.length === 0 ? (
+                <EmptyState title="No value found" description="No leg has a positive edge at the offered price." />
+              ) : (
+                <Card padded={false}>
+                  <DataTable columns={underdogColumns} rows={underdogRows} rowKey={(l) => l.id} caption="Underdog value" />
+                </Card>
+              )}
+              {loggingLeg && (
+                <LogResultForm
+                  key={loggingLeg.id}
+                  ticket={straightTicketOf(loggingLeg)}
+                  suggestedStake={recommendStakeForTicket({ tier: 'straight', legs: [loggingLeg], combinedProbability: loggingLeg.modelProbability }, bankroll).dollarStake}
+                  onDone={() => setLoggingLeg(null)}
+                />
+              )}
+            </section>
           )}
 
-          {groups.map((group) => (
+          {showStraights && (
+            <>
+              <h2 className="section-title">Straight plays</h2>
+              {visibleStraight.length === 0 ? (
+                <EmptyState title="No straight plays" description="No legs clear the probability floor for this filter." />
+              ) : (
+                <Card padded={false}>
+                  <DataTable columns={straightColumns} rows={visibleStraight} rowKey={(l) => l.id} caption="Straight plays" />
+                </Card>
+              )}
+            </>
+          )}
+
+          {showParlays && groups.map((group) => (
             <section key={group.tier} aria-labelledby={`${group.tier}-h`}>
               <h2 className="section-title" id={`${group.tier}-h`}>{group.title}</h2>
               {group.items.length === 0 ? (

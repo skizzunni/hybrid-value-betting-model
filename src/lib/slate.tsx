@@ -50,7 +50,7 @@ export function SlateProvider({ children }: { children: ReactNode }) {
         setState({
           status: 'ready',
           legs,
-          tickets: generateDailyMenu(legs, { lotteryLegs: 25, minProbability: MIN_PROBABILITY }),
+          tickets: generateDailyMenu(legs, { lotteryLegs: 25, minProbability: MIN_PROBABILITY, mode: 'parlays' }),
           straightPlays: topStraightPlays(legs, 8),
           source: keyConfigured && !isSampleSlate(legs) ? 'live' : 'demo',
           error: null,
