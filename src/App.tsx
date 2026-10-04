@@ -129,6 +129,13 @@ const signalFeed = [
   'Parlay books widened on Same-Game ticket pricing'
 ]
 
+const marketTimeline = [
+  { time: '09:45', title: 'Odds refresh', detail: 'Book edge dropped 1.3 pts' },
+  { time: '10:00', title: 'Injury check', detail: 'Star PG questionable' },
+  { time: '10:15', title: 'Usage update', detail: 'Minutes projection revised upward' },
+  { time: '10:30', title: 'Decision pass', detail: 'No action on marginal edge' }
+]
+
 export default function App() {
   return (
     <div className="app-shell">
@@ -327,32 +334,20 @@ export default function App() {
             </div>
           </div>
 
-          <div className="half-card">
+          <div className="half-card timeline-card">
             <div className="section-head small-gap">
-              <TrendingUp size={18} />
-              <h2>Model calibration</h2>
+              <Clock3 size={18} />
+              <h2>Refresh timeline</h2>
             </div>
 
-            <div className="chart-box">
-              {[24, 26, 33, 19, 28, 32, 27].map((height, index) => (
-                <div key={index} className="bar-col" style={{ height: `${height}%` }} />
-              ))}
-            </div>
-
-            <div className="confidence-grid">
-              {[
-                ['Win rate', '58%', '#34d399'],
-                ['Edge', '6.8%', '#38bdf8'],
-                ['Variance', '42%', '#fbbf24'],
-                ['Risk', '1.2%', '#fb7185']
-              ].map(([label, value, color]) => (
-                <div key={label} className="confidence-cell">
-                  <div className="confidence-head">
-                    <span>{label}</span>
-                    <b style={{ color }}>{value}</b>
-                  </div>
-                  <div className="confidence-bar">
-                    <span style={{ width: value.replace('%', ''), background: color }} />
+            <div className="timeline-list">
+              {marketTimeline.map((item) => (
+                <div key={item.time} className="timeline-item">
+                  <div className="timeline-time">{item.time}</div>
+                  <div className="timeline-line" />
+                  <div className="timeline-copy">
+                    <strong>{item.title}</strong>
+                    <span>{item.detail}</span>
                   </div>
                 </div>
               ))}

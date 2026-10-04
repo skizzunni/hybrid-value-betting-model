@@ -550,6 +550,65 @@ img {
   padding: 24px;
 }
 
+.timeline-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 10px;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 52px 2px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.timeline-time {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.timeline-line {
+  position: relative;
+  width: 2px;
+  min-height: 52px;
+  background: linear-gradient(180deg, var(--emerald), var(--cyan));
+}
+
+.timeline-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--emerald);
+  transform: translateX(-50%);
+}
+
+.timeline-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeline-copy strong {
+  font-size: 0.96rem;
+}
+
+.timeline-copy span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .list-stack {
   display: grid;
   gap: 12px;
