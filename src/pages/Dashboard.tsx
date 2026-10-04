@@ -1,21 +1,8 @@
-import React, { useEffect, useState } from 'react'
-
-const seedData = [
-  { type: 'Player prop', name: 'Jalen Brunson O 27.5', fair: '58.4%', book: '51.2%', edge: '+8.6%', size: '0.6u', status: 'Live +EV' },
-  { type: 'Side', name: 'Lakers +3.5', fair: '54.0%', book: '48.7%', edge: '+4.2%', size: '0.4u', status: 'Monitor' },
-  { type: 'Parlay', name: '10-leg SGP build', fair: '14.8%', book: '9.7%', edge: '+11.1%', size: '0.2u', status: 'Correlation check' },
-  { type: 'Total', name: 'Over 218.5', fair: '53.8%', book: '49.1%', edge: '+5.7%', size: '0.5u', status: 'Live +EV' }
-]
+import React, { useState } from 'react'
+import { seedTickets } from '../mockData'
 
 export default function Dashboard() {
-  const [tickets, setTickets] = useState<any[]>(seedData)
-
-  useEffect(() => {
-    fetch('/api/tickets')
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then(setTickets)
-      .catch(() => setTickets(seedData))
-  }, [])
+  const [tickets] = useState<any[]>(seedTickets)
 
   return (
     <div className="container page-space">
@@ -78,7 +65,7 @@ export default function Dashboard() {
                 'Beat report updated: Celtics injury risk elevated 11%',
                 'Weather alert: wind 18 mph reduces total model variance',
                 'Usage increase signal: Lambert projected 34 min vs earlier 28',
-                'Parlay books widened on same-game pricing'
+                'Parlay books widened on same-game pricing',
               ].map((item) => (
                 <div key={item} className="signal-item">
                   <span className="signal-dot" />

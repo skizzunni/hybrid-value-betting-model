@@ -1,11 +1,7 @@
 services:
-  - type: web_service
-    name: hybrid-value-betting-backend
+  - type: static_site
+    name: hybrid-value-betting-model
     repo: https://github.com/skizzunni/hybrid-value-betting-model
     branch: main
-    rootDir: server
-    buildCommand: "cd server && npm install && npm run build"
-    startCommand: "cd server && npm start"
-    envVars:
-      - key: NODE_ENV
-        value: production
+    buildCommand: "npm install && npm run build"
+    publishPath: "dist"

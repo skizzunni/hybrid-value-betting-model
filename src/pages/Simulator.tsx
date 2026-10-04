@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { runLocalSimulation } from '../mockData'
 
 export default function Simulator() {
   const [fair, setFair] = useState(0.55)
@@ -8,12 +9,7 @@ export default function Simulator() {
 
   async function runSim() {
     setLoading(true)
-    const resp = await fetch('/api/simulate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fair, trials })
-    })
-    const data = await resp.json()
+    const data = runLocalSimulation(fair, trials)
     setResult(data)
     setLoading(false)
   }

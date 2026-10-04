@@ -1,29 +1,15 @@
 import React, { useEffect, useState } from 'react'
+import { generateLocalParlays } from '../mockData'
 
 export default function ParlaysPage() {
   const [parlays, setParlays] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function load() {
-      setLoading(true)
-      try {
-        const resp = await fetch('/api/parlays', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ legs: 4, count: 10, minFair: 0.6, minEV: -0.01 }),
-        })
-        const json = await resp.json()
-        setParlays(json.parlays || [])
-      } catch (err) {
-        console.error(err)
-        setParlays([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    load()
+    setLoading(true)
+    const results = generateLocalParlays(4, 10, 0.6, -0.01)
+    setParlays(results)
+    setLoading(false)
   }, [])
 
   return (
@@ -51,7 +37,7 @@ export default function ParlaysPage() {
 
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {parlay.legs.map((leg: any, legIndex: number) => (
-                      <span key={`${leg.name}-${legIndex}`} style={{ display: 'inline-flex', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(148,163,184,0.18)', borderRadius: 999, padding: '6px 10px', fontSize: 12, color: '#e2e8f0' }}>
+                      <span key={`${leg.name}-${legIndex}`} style={{ display: 'inline-flex', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(148,163,184,0.18)', borderRadius: 999, padding: '6px 10px', color: '#e2e8f0' }}>
                         {leg.name}
                       </span>
                     ))}
