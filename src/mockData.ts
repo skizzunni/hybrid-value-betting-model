@@ -77,20 +77,63 @@ function normalizePick(item: any): PickItem {
 }
 
 export function generateLocalParlays(
-  eventsOrInput?: any[],
-  arg2?: any,
-  arg3?: any,
-  arg4?: any
+  sourceOrCount?: number | any[] | { items?: any[]; maxLegs?: number; topN?: number },
+  maybeMaxLegs?: number | { maxLegs?: number; topN?: number },
+  maybeTopN?: number
 ): Parlay[] {
-  const events = Array.isArray(eventsOrInput) ? eventsOrInput : []
-  const maxLegs = typeof arg2 === 'number' ? arg2 : 2
-  const topN = typeof arg3 === 'number' ? arg3 : 20
+  // If the app calls generateLocalParlays(10, 42) or similar, handle it as a count-based mock.
+  if (typeof sourceOrCount === 'number') {
+    const count = Math.max(1, sourceOrCount)
+    const maxLegs = typeof maybeMaxLegs === 'number' ? maybeMaxLegs : 2
+    const picks = samplePicks.slice(0, Math.min(samplePicks.length, count))
+    const parlays: Parlay[] = []
 
-  const picks = events
-    .map(normalizePick)
-    .sort((a, b) => b.fair - a.fair)
-    .slice(0, topN)
+    for (let i = 0; i < picks.length; i++) {
+      const pick = picks[i]
+      const prob = Math.min(0.9999, Math.max(0.0001, pick.fair))
+      const payout = probabilityToPayoutMultiplier(prob)
+      parlays.push({
+        id: `parlay-1-${i}`,
+        label: `${pick.title} — ${pick.side}`.trim(),
+        legs: [pick],
+        probability: prob,
+        payoutMultiplier: payout,
+        expectedValue: payout * prob - 1,
+      })
+    }
 
+    if (maxLegs >= 2) {
+      for (let i = 0; i < picks.length; i++) {
+        for (let j = i + 1; j < picks.length; j++) {
+          const legs = [picks[i], picks[j]]
+          const prob = Math.max(
+            0.000001,
+            product(legs.map((l) => Math.min(0.9999, Math.max(0.0001, l.fair))))
+          )
+          const payout = probabilityToPayoutMultiplier(prob)
+          parlays.push({
+            id: `parlay-2-${i}-${j}`,
+            label: `${legs[0].title} + ${legs[1].title}`,
+            legs,
+            probability: prob,
+            payoutMultiplier: payout,
+            expectedValue: payout * prob - 1,
+          })
+        }
+      }
+    }
+
+    return parlays.sort((a, b) => b.probability - a.probability)
+  }
+
+  const items = Array.isArray(sourceOrCount)
+    ? sourceOrCount
+    : sourceOrCount && Array.isArray(sourceOrCount.items)
+      ? sourceOrCount.items
+      : []
+
+  const picks = items.map(normalizePick)
+  const maxLegs = typeof maybeMaxLegs === 'number' ? maybeMaxLegs : 2
   const parlays: Parlay[] = []
 
   for (let i = 0; i < picks.length; i++) {
@@ -107,8 +150,7 @@ export function generateLocalParlays(
     })
   }
 
-  const mLegs = Math.max(1, Math.min(3, maxLegs))
-  if (mLegs >= 2) {
+  if (maxLegs >= 2) {
     for (let i = 0; i < picks.length; i++) {
       for (let j = i + 1; j < picks.length; j++) {
         const legs = [picks[i], picks[j]]
@@ -133,11 +175,49 @@ export function generateLocalParlays(
 }
 
 export function runLocalSimulation(
-  itemsOrInput?: any[] | PickItem[] | Parlay[],
+  input?: number | any[] | PickItem[] | Parlay[],
   arg2?: number | { trials?: number; stakePerBet?: number },
   arg3?: number
 ): SimulationResult {
-  const items = Array.isArray(itemsOrInput) ? itemsOrInput : []
+  if (typeof input === 'number') {
+    const trials = Math.max(1, input)
+    const stakePerBet = typeof arg2 === 'number' ? arg2 : 1
+    let wins = 0
+    let losses = 0
+    let totalStake = 0
+    let totalReturn = 0
+
+    for (let t = 0; t < trials; t++) {
+      for (const pick of samplePicks) {
+        const p = Math.min(0.999999, Math.max(0, pick.fair))
+        const mult = probabilityToPayoutMultiplier(p)
+        totalStake += stakePerBet
+        const roll = Math.random()
+        if (roll < p) {
+          totalReturn += stakePerBet * mult
+          wins += 1
+        } else {
+          losses += 1
+        }
+      }
+    }
+
+    const roi = totalStake > 0 ? (totalReturn - totalStake) / totalStake : 0
+    const avgProfitPerTrial = (totalReturn - totalStake) / trials
+
+    return {
+      trials,
+      wins,
+      losses,
+      totalStake,
+      totalReturn,
+      roi,
+      avgProfitPerTrial,
+      summary: `Simulated ${trials} trials with ${samplePicks.length} picks each. Wins: ${wins}, Losses: ${losses}, ROI: ${(roi * 100).toFixed(2)}%.`,
+    }
+  }
+
+  const items = Array.isArray(input) ? input : []
   const trials =
     typeof arg2 === 'number'
       ? arg2
