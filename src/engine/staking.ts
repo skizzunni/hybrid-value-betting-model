@@ -1,68 +1,143 @@
-import type { Leg, Ticket } from './ticketBuilder'
+import type { Leg } from './ticketBuilder'
 import { safeDecimal } from './ticketBuilder'
 
-export type StakeTier = 'Diamond' | 'Gold' | 'Silver' | 'Bronze'
+export type StakingHistory = {
+  lastN?: number
+}
+
+export type StakeRecommendation = {
+  units: number
+  dollarStake: number
+  rationale: string
+  warning?: string
+}
 
 export interface StakeHistoryEntry {
   hit: boolean
 }
 
 export interface StakingOptions {
-  /** 1 unit = bankroll / bankrollUnits (default 50). */
   bankrollUnits?: number
-  /** Fraction of full Kelly used as a cap (default 0.25). */
   kellyFraction?: number
-  /** Number of most recent tickets considered for the downswing throttle (default 5). */
   throttleLosses?: number
-  /** Multiplier applied when the last N tickets all lost (default 0.5). */
   throttleFactor?: number
 }
 
-const TIER_UNITS: Record<StakeTier, number> = { Diamond: 1, Gold: 0.75, Silver: 0.5, Bronze: 0.25 }
-const TIER_ORDER: StakeTier[] = ['Bronze', 'Silver', 'Gold', 'Diamond']
+type StakeTicket = {
+  tier?: string
+  legs: Array<Partial<Leg> & Pick<Leg, 'modelProbability'>>
+  combinedProbability: number
+  payoutDecimal?: number
+}
 
-export function tierForLeg(leg: Leg): StakeTier {
-  const edge = typeof leg.edge === 'number' ? leg.edge : leg.modelProbability - 1 / safeDecimal(leg.americanOdds)
+const BASE_UNITS: Record<string, number> = {
+  Gold: 3,
+  Diamond: 2,
+  Silver: 1,
+  Bronze: 0.5,
+}
+
+export function tierForLeg(leg: { modelProbability: number; edge?: number; americanOdds?: number }): string {
+  const edge = leg.edge ?? (
+    typeof leg.americanOdds === 'number'
+      ? leg.modelProbability - 1 / safeDecimal(leg.americanOdds)
+      : 0
+  )
   const p = leg.modelProbability
-  if (p >= 0.7 && edge >= 0.05) return 'Diamond'
-  if (p >= 0.62 && edge >= 0.03) return 'Gold'
-  if (p >= 0.55 && edge >= 0.01) return 'Silver'
+  if (p >= 0.65 || (p >= 0.60 && edge > 0.02)) return 'Gold'
+  if (p >= 0.60 || (p >= 0.57 && edge > 0.01)) return 'Diamond'
+  if (p >= 0.55 || edge > 0) return 'Silver'
   return 'Bronze'
 }
 
+function consecutiveLossCount(history: StakingHistory | StakeHistoryEntry[]): number {
+  if (!Array.isArray(history)) {
+    const losses = history.lastN ?? 0
+    return Number.isFinite(losses) ? Math.max(0, Math.floor(losses)) : 0
+  }
+  let losses = 0
+  for (let i = history.length - 1; i >= 0 && !history[i].hit; i -= 1) losses += 1
+  return losses
+}
+
+function ticketPayout(ticket: StakeTicket): number {
+  if (typeof ticket.payoutDecimal === 'number') return ticket.payoutDecimal
+  return ticket.legs.reduce((product, leg) => (
+    product * safeDecimal(leg.americanOdds ?? 0)
+  ), 1)
+}
+
 export function recommendStakeForTicket(
-  ticket: Ticket,
+  ticket: StakeTicket,
   bankroll: number,
-  history: StakeHistoryEntry[] = [],
-  options: StakingOptions = {}
-): { units: number; dollarStake: number; rationale: string } {
-  const { bankrollUnits = 50, kellyFraction = 0.25, throttleLosses = 5, throttleFactor = 0.5 } = options
+  history: StakingHistory | StakeHistoryEntry[] = {},
+  options: StakingOptions = {},
+): StakeRecommendation {
   if (!(bankroll > 0) || ticket.legs.length === 0) {
     return { units: 0, dollarStake: 0, rationale: 'No bankroll or no legs: no stake.' }
   }
-  const unit = bankroll / bankrollUnits
-  // A ticket is only as strong as its weakest leg.
-  const tier = ticket.legs.map(tierForLeg).reduce((a, b) => (TIER_ORDER.indexOf(b) < TIER_ORDER.indexOf(a) ? b : a))
-  let units = TIER_UNITS[tier]
-  const reasons = [`${tier} tier base ${units}u`]
 
-  const b = ticket.payoutDecimal - 1
-  const p = ticket.combinedProbability
-  const kelly = b > 0 ? (b * p - (1 - p)) / b : 0
+  const bankrollUnits = options.bankrollUnits
+  const unit = bankroll / (
+    typeof bankrollUnits === 'number' && Number.isFinite(bankrollUnits) && bankrollUnits > 0
+      ? bankrollUnits
+      : 50
+  )
+  const losses = consecutiveLossCount(history)
+  const legacyHistory = Array.isArray(history)
+  if (ticket.tier?.toLowerCase() === 'lottery') {
+    const units = legacyHistory && losses >= (options.throttleLosses ?? 5)
+      ? 0.25 * (options.throttleFactor ?? 0.5)
+      : 0.25
+    return {
+      units,
+      dollarStake: Math.max(1, unit * units),
+      rationale: 'Lottery ticket (extreme variance). Recommended max 0.25 units.',
+      warning: 'LOTTERY: Very high variance. Small stake only. Expected value highly negative.',
+    }
+  }
+
+  const leg = ticket.legs[0]
+  const tier = tierForLeg(leg)
+  const baseUnits = BASE_UNITS[tier]
+  let units = baseUnits
+  if (legacyHistory && losses >= (options.throttleLosses ?? 5)) {
+    units *= options.throttleFactor ?? 0.5
+  } else if (losses > 0) {
+    units = Math.max(0.25, baseUnits * Math.pow(0.8, Math.min(losses, 5)))
+  }
+  const payoutProfit = ticketPayout(ticket) - 1
+  const probability = ticket.combinedProbability
+  if (!Number.isFinite(probability) || probability <= 0 || probability > 1) {
+    return { units: 0, dollarStake: 0, rationale: `Tier ${tier}. Invalid model probability, no stake.` }
+  }
+  const kelly = payoutProfit > 0
+    ? (payoutProfit * probability - (1 - probability)) / payoutProfit
+    : 0
   if (kelly <= 0) {
-    return { units: 0, dollarStake: 0, rationale: `${reasons[0]}; Kelly <= 0 at model probability, no stake.` }
-  }
-  const kellyUnits = (kelly * kellyFraction * bankroll) / unit
-  if (kellyUnits < units) {
-    units = kellyUnits
-    reasons.push(`capped by ${kellyFraction} Kelly to ${kellyUnits.toFixed(2)}u`)
+    return { units: 0, dollarStake: 0, rationale: `Tier ${tier}. Kelly <= 0 at model probability, no stake.` }
   }
 
-  const recent = history.slice(-throttleLosses)
-  if (recent.length === throttleLosses && throttleLosses > 0 && recent.every((h) => !h.hit)) {
-    units *= throttleFactor
-    reasons.push(`downswing throttle x${throttleFactor}`)
+  const kellyFraction = Math.max(0, Math.min(1, options.kellyFraction ?? 0.25))
+  const kellyCap = (kelly * kellyFraction * bankroll) / unit
+  if (kellyCap < units) units = kellyCap
+  const rationale = `Tier ${tier}. ${losses > 0 ? `Downswing throttle (${losses} losses): ` : ''}${units.toFixed(2)} units.`
+  return {
+    units,
+    dollarStake: Math.round(units * unit * 100) / 100,
+    rationale,
   }
-  units = Math.round(units * 100) / 100
-  return { units, dollarStake: Math.round(units * unit * 100) / 100, rationale: reasons.join('; ') }
+}
+
+export function topStraightPlays<T extends { modelProbability: number; edge?: number }>(
+  candidates: T[],
+  count = 5,
+): T[] {
+  return candidates
+    .filter((candidate) => candidate.modelProbability >= 0.55)
+    .sort((a, b) => (
+      (b.modelProbability * 0.8 + (b.edge ?? 0) * 0.2) -
+      (a.modelProbability * 0.8 + (a.edge ?? 0) * 0.2)
+    ))
+    .slice(0, count)
 }

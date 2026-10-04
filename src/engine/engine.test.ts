@@ -51,7 +51,7 @@ describe('ticketBuilder', () => {
 
 describe('staking', () => {
   it('tiers legs and throttles after losses', () => {
-    expect(tierForLeg({ ...mk(1)[0], modelProbability: 0.9 })).toBe('Diamond')
+    expect(tierForLeg({ ...mk(1)[0], modelProbability: 0.9 })).toBe('Gold')
     const t = buildTicketFromSpec(mk(60), { id: 's', name: 's', strategy: 'highestProbability', targetLegs: 3 })
     const base = recommendStakeForTicket(t, 1000)
     const thr = recommendStakeForTicket(t, 1000, Array(5).fill({ hit: false }))

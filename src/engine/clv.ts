@@ -15,8 +15,11 @@ export function americanToImpliedProbability(american: number): number {
 const toArray = (v: number | number[]): number[] => (Array.isArray(v) ? v : [v])
 
 /** No-vig probability of the selection by normalising against the opposing side. */
-export function noVigProbability(selectionOdds: number, oppositeOdds: number): number {
+export function noVigProbability(selectionOdds: number): number
+export function noVigProbability(selectionOdds: number, oppositeOdds: number): number
+export function noVigProbability(selectionOdds: number, oppositeOdds?: number): number {
   const a = americanToImpliedProbability(selectionOdds)
+  if (oppositeOdds === undefined) return a
   const b = americanToImpliedProbability(oppositeOdds)
   return a / (a + b)
 }
@@ -56,7 +59,20 @@ export function compareClosingValue(
   return (safeDecimal(takenOdds) * closeProb - 1) * 100
 }
 
-export function computeCLV(leg: LegWithClosing): number | undefined {
+export function computeCLV(takenAmericanOdds: number, closingOdds: number | number[]): number
+export function computeCLV(leg: LegWithClosing): number | undefined
+export function computeCLV(
+  takenOrLeg: number | LegWithClosing,
+  closingOdds?: number | number[],
+): number | undefined {
+  if (typeof takenOrLeg === 'number') {
+    if (closingOdds === undefined) return undefined
+    const closing = toArray(closingOdds)
+    if (!closing.length) return NaN
+    const closingNoVig = closing.reduce((sum, odds) => sum + americanToImpliedProbability(odds), 0) / closing.length
+    return (americanToImpliedProbability(takenOrLeg) - closingNoVig) * 100
+  }
+  const leg = takenOrLeg
   if (leg.closingOdds === undefined) return undefined
   const v = compareClosingValue(leg.americanOdds, leg.closingOdds, leg.closingOppositeOdds)
   return Number.isFinite(v) ? v : undefined

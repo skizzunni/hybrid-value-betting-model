@@ -57,7 +57,7 @@ export default function ParlaysPage() {
                       marginBottom: 12,
                     }}
                   >
-                    <strong style={{ fontSize: 18 }}>Parlay #{index + 1}</strong>
+                    <strong style={{ fontSize: 18 }}>Candidate #{index + 1} — {parlay.legs.length} leg{parlay.legs.length !== 1 ? 's' : ''}</strong>
                     <div style={{ color: '#8ae7bb', fontWeight: 700 }}>
                       Est. prob {parlay.estProb}
                     </div>

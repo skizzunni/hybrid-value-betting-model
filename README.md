@@ -30,3 +30,35 @@ npm run dev
 - GET /api/metrics
 - POST /api/simulate
 - POST /api/tickets/:name/resolve
+
+## Daily Ticket Engine
+
+The frontend ticket engine builds two kinds of tickets for each configured strategy:
+
+- **Lottery:** aims for 25 legs. Their combined probability is the actual product of the leg probabilities, so a 25-leg ticket will generally have an astronomically low chance of winning.
+- **Winnable:** searches from 3 through 12 legs for a combined probability between 5% and 18%. If the available legs and constraints cannot reach that range, the menu labels the best available result instead of presenting it as in range.
+
+The default probability model uses the no-vig market probability; it does not claim an edge over the market. To provide another model, implement `ProbabilityModel` and pass it to `fetchOddsAsLegs`:
+
+```ts
+import { americanToDecimal } from './src/engine/ticketBuilder'
+import { fetchOddsAsLegs, type ProbabilityModel } from './src/engine/oddsAdapter'
+
+const model: ProbabilityModel = {
+  estimate(leg) {
+    return leg.americanOdds ? 1 / americanToDecimal(leg.americanOdds) : Number.NaN
+  },
+}
+
+const legs = await fetchOddsAsLegs(undefined, undefined, model)
+```
+
+Build and inspect the menu with:
+
+```ts
+import { generateDailyMenu } from './src/engine/ticketBuilder'
+
+const menu = generateDailyMenu(legs, { lotteryLegs: 25, minProbability: 0.55 })
+```
+
+Set `VITE_ODDS_API_KEY` to load odds from The Odds API. Without a key (or if the request fails), the UI uses the repository's sample picks.
