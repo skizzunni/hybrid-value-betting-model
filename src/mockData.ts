@@ -6,15 +6,22 @@ export type PickItem = {
   market?: string
   side?: string
   odds?: number
-  fair: number
+  fair?: number
   confidence?: 'High' | 'Medium' | 'Low'
   units?: number
+  edge?: number
+  note?: string
   notes?: string[]
+  value?: number
+  risk?: number
+  status?: string
+  label?: string
 }
 
 export type DashboardPickGroup = {
   id: string
   label: string
+  note?: string
   items: PickItem[]
 }
 
@@ -49,6 +56,7 @@ function probabilityToPayoutMultiplier(p: number, vig = 0.95) {
 }
 
 function normalizePick(item: any): PickItem {
+  const fair = typeof item?.fair === 'number' ? item.fair : 0.5
   return {
     id: item?.id ?? item?.title ?? Math.random().toString(36).slice(2),
     title: item?.title ?? 'Untitled pick',
@@ -56,10 +64,16 @@ function normalizePick(item: any): PickItem {
     market: item?.market ?? 'Moneyline',
     side: item?.side ?? 'Pick',
     odds: item?.odds ?? 100,
-    fair: typeof item?.fair === 'number' ? item.fair : 0.5,
+    fair,
     confidence: item?.confidence ?? 'Medium',
     units: typeof item?.units === 'number' ? item.units : 1,
-    notes: Array.isArray(item?.notes) ? item.notes : [],
+    edge: typeof item?.edge === 'number' ? item.edge : (fair - 0.5) * 100,
+    note: item?.note ?? item?.notes?.[0] ?? 'Generated pick',
+    notes: Array.isArray(item?.notes) ? item.notes : [item?.note ?? 'Generated pick'],
+    value: typeof item?.value === 'number' ? item.value : fair,
+    risk: typeof item?.risk === 'number' ? item.risk : 1,
+    status: item?.status ?? 'active',
+    label: item?.label ?? item?.title ?? 'Pick',
   }
 }
 
@@ -80,6 +94,7 @@ export function generateLocalParlays(
 
   const parlays: Parlay[] = []
 
+  // single-leg
   for (let i = 0; i < picks.length; i++) {
     const pick = picks[i]
     const prob = Math.min(0.9999, Math.max(0.0001, pick.fair ?? 0))
@@ -220,6 +235,9 @@ export const samplePicks: PickItem[] = [
     fair: 0.63,
     confidence: 'High',
     units: 1,
+    note: 'Strong value on the favorite',
+    notes: ['Strong value on the favorite'],
+    edge: 13,
   },
   {
     id: 'p2',
@@ -230,6 +248,9 @@ export const samplePicks: PickItem[] = [
     fair: 0.58,
     confidence: 'Medium',
     units: 1,
+    note: 'Live matchup edge',
+    notes: ['Live matchup edge'],
+    edge: 8,
   },
   {
     id: 'p3',
@@ -240,6 +261,9 @@ export const samplePicks: PickItem[] = [
     fair: 0.55,
     confidence: 'Low',
     units: 1,
+    note: 'Value is softer but still live',
+    notes: ['Value is softer but still live'],
+    edge: 5,
   },
 ]
 
@@ -248,6 +272,7 @@ export function getPickGroups(): DashboardPickGroup[] {
     {
       id: 'best-plays',
       label: 'Best plays',
+      note: 'Generated from current board',
       items: samplePicks,
     },
   ]
@@ -292,7 +317,8 @@ export function buildDashboardCsv(rows: any[] = []) {
   return buildCsv(rows)
 }
 
-export { PickItem as Pick }
+// Important: for isolatedModules, this must be `export type`, not `export { ... }`
+export type { PickItem as Pick }
 
 export default {
   samplePicks,
