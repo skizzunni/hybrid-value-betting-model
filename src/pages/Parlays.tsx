@@ -1,69 +1,54 @@
-import React, { useEffect, useState } from 'react'
-import { generateLocalParlays } from '../mockData'
+export function generateLocalParlays(...args: any[]): Parlay[] {
+  const first = args[0]
+  const second = args[1]
+  const third = args[2]
+  const fourth = args[3]
 
-export default function ParlaysPage() {
-  const [parlays, setParlays] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  // Support generateLocalParlays(4, 10, 0.6, -0.01)
+  if (typeof first === 'number') {
+    const count = Math.max(1, first)
+    const maxLegs = typeof second === 'number' ? second : 2
+    const picks = samplePicks.slice(0, Math.min(samplePicks.length, count))
+    const parlays: Parlay[] = []
 
-useEffect(() => {
-  setLoading(true)
-  const raw = generateLocalParlays(4, 10, 0.6, -0.01)
-  const results = raw.map((parlay) => ({
-    ...parlay,
-    estProb: parlay.probability,
-    estPayout: parlay.payoutMultiplier,
-    totalEV: parlay.expectedValue ?? 0,
-    legs: (parlay.legs ?? []).map((leg: any) => ({
-      ...leg,
-      name: leg.title ?? leg.side ?? 'Pick',
-    })),
-  }))
-  setParlays(results)
-  setLoading(false)
-}, [])
+    for (let i = 0; i < picks.length; i++) {
+      const pick = picks[i]
+      const prob = Math.min(0.9999, Math.max(0.0001, pick.fair))
+      const payout = probabilityToPayoutMultiplier(prob)
+      parlays.push({
+        id: `parlay-1-${i}`,
+        label: `${pick.title} — ${pick.side}`.trim(),
+        legs: [pick],
+        probability: prob,
+        payoutMultiplier: payout,
+        expectedValue: payout * prob - 1,
+      })
+    }
 
-  return (
-    <div className="container" style={{ padding: '32px 0 80px' }}>
-      <div className="section-panel board-panel">
-        <div className="section-head split-head">
-          <div className="section-head inline-head">
-            <h2>Parlay generator</h2>
-          </div>
-        </div>
+    if (maxLegs >= 2) {
+      for (let i = 0; i < picks.length; i++) {
+        for (let j = i + 1; j < picks.length; j++) {
+          const legs = [picks[i], picks[j]]
+          const prob = Math.max(
+            0.000001,
+            product(legs.map((leg) => Math.min(0.9999, Math.max(0.0001, leg.fair))))
+          )
+          const payout = probabilityToPayoutMultiplier(prob)
+          parlays.push({
+            id: `parlay-2-${i}-${j}`,
+            label: `${legs[0].title} + ${legs[1].title}`,
+            legs,
+            probability: prob,
+            payoutMultiplier: payout,
+            expectedValue: payout * prob - 1,
+          })
+        }
+      }
+    }
 
-        <div style={{ marginTop: 20 }}>
-          {loading ? (
-            <div style={{ color: '#94a3b8' }}>Loading candidate parlays…</div>
-          ) : parlays.length === 0 ? (
-            <div style={{ color: '#94a3b8' }}>No valid 3–6 leg parlays met the threshold.</div>
-          ) : (
-            <div style={{ display: 'grid', gap: 16 }}>
-              {parlays.map((parlay, index) => (
-                <div key={`${parlay.estProb}-${index}`} style={{ border: '1px solid rgba(148,163,184,0.18)', borderRadius: 18, background: 'rgba(2,6,23,0.7)', padding: 18 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 12 }}>
-                    <strong style={{ fontSize: 18 }}>Parlay #{index + 1}</strong>
-                    <div style={{ color: '#8ae7bb', fontWeight: 700 }}>Est. prob {parlay.estProb}</div>
-                  </div>
+    return parlays.sort((a, b) => b.probability - a.probability)
+  }
 
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {parlay.legs.map((leg: any, legIndex: number) => (
-                      <span key={`${leg.name}-${legIndex}`} style={{ display: 'inline-flex', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(148,163,184,0.18)', borderRadius: 999, padding: '6px 10px', color: '#e2e8f0' }}>
-                        {leg.name}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div style={{ marginTop: 14, color: '#94a3b8', display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-                    <span>Est. payout: {parlay.estPayout}</span>
-                    <span>Legs: {parlay.legs.length}</span>
-                    <span>EV: {parlay.totalEV}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
+  // fallback for array mode...
+  return []
 }
