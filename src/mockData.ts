@@ -1,14 +1,85 @@
+export type PickItem = {
+  id: string
+  title: string
+  sport: string
+  market: string
+  side: string
+  odds: number
+  fair: number
+  confidence: 'High' | 'Medium' | 'Low'
+  units: number
+  edge: number
+  note: string
+  notes: string[]
+  value: number
+  risk: number
+  status: string
+  label: string
+}
+
+export type DashboardPickGroup = {
+  id: string
+  label: string
+  note: string
+  items: PickItem[]
+}
+
+export type Parlay = {
+  id: string
+  label: string
+  legs: PickItem[]
+  probability: number
+  payoutMultiplier: number
+  expectedValue?: number
+}
+
+export type SimulationResult = {
+  trials: number
+  wins: number
+  losses: number
+  totalStake: number
+  totalReturn: number
+  roi: number
+  avgProfitPerTrial: number
+  summary: string
+}
+
+function product(nums: number[]) {
+  return nums.reduce((acc, n) => acc * n, 1)
+}
+
+function probabilityToPayoutMultiplier(p: number, vig = 0.95) {
+  if (p <= 0) return 0
+  const decimalOdds = 1 / p
+  return Math.max(1, decimalOdds * vig)
+}
+
+function normalizePick(item: any): PickItem {
+  const fair = typeof item?.fair === 'number' ? item.fair : 0.5
+  return {
+    id: String(item?.id ?? item?.title ?? Math.random().toString(36).slice(2)),
+    title: item?.title ?? 'Untitled pick',
+    sport: item?.sport ?? 'basketball_nba',
+    market: item?.market ?? 'Moneyline',
+    side: item?.side ?? 'Pick',
+    odds: typeof item?.odds === 'number' ? item.odds : 100,
+    fair,
+    confidence: item?.confidence ?? 'Medium',
+    units: typeof item?.units === 'number' ? item.units : 1,
+    edge: typeof item?.edge === 'number' ? item.edge : (fair - 0.5) * 100,
+    note: item?.note ?? item?.notes?.[0] ?? 'Generated pick',
+    notes: Array.isArray(item?.notes) ? item.notes : [item?.note ?? 'Generated pick'],
+    value: typeof item?.value === 'number' ? item.value : fair,
+    risk: typeof item?.risk === 'number' ? item.risk : 1,
+    status: item?.status ?? 'active',
+    label: item?.label ?? item?.title ?? 'Pick',
+  }
+}
+
 export function generateLocalParlays(...args: any[]): Parlay[] {
   const first = args[0]
   const second = args[1]
   const third = args[2]
-  const fourth = args[3]
-
-  // Support old calling patterns:
-  // generateLocalParlays(4, 10, 0.6, -0.01)
-  // generateLocalParlays(items)
-  // generateLocalParlays(items, 2)
-  // generateLocalParlays(items, { maxLegs: 3, topN: 20 })
 
   if (typeof first === 'number') {
     const count = Math.max(1, first)
@@ -60,17 +131,19 @@ export function generateLocalParlays(...args: any[]): Parlay[] {
       ? first.items
       : []
 
-  const maxLegs = typeof second === 'number'
-    ? second
-    : typeof second === 'object' && second?.maxLegs
-      ? second.maxLegs
-      : 2
+  const maxLegs =
+    typeof second === 'number'
+      ? second
+      : typeof second === 'object' && second?.maxLegs
+        ? second.maxLegs
+        : 2
 
-  const topN = typeof third === 'number'
-    ? third
-    : typeof second === 'object' && second?.topN
-      ? second.topN
-      : 20
+  const topN =
+    typeof third === 'number'
+      ? third
+      : typeof second === 'object' && second?.topN
+        ? second.topN
+        : 20
 
   const picks = items
     .map(normalizePick)
@@ -162,15 +235,8 @@ export function runLocalSimulation(...args: any[]): SimulationResult {
   }
 
   const items = Array.isArray(first) ? first : []
-  const trials =
-    typeof second === 'number'
-      ? second
-      : 5000
-
-  const stakePerBet =
-    typeof third === 'number'
-      ? third
-      : 1
+  const trials = typeof second === 'number' ? second : 5000
+  const stakePerBet = typeof third === 'number' ? third : 1
 
   let wins = 0
   let losses = 0
@@ -206,4 +272,126 @@ export function runLocalSimulation(...args: any[]): SimulationResult {
     avgProfitPerTrial,
     summary: `Simulated ${trials} trials. Wins: ${wins}, Losses: ${losses}, ROI: ${(roi * 100).toFixed(2)}%.`,
   }
+}
+
+export const samplePicks: PickItem[] = [
+  {
+    id: 'p1',
+    title: 'Knicks vs Bucks',
+    sport: 'basketball_nba',
+    market: 'Moneyline',
+    side: 'Knicks',
+    odds: 110,
+    fair: 0.63,
+    confidence: 'High',
+    units: 1,
+    edge: 13,
+    note: 'Strong value on the favorite',
+    notes: ['Strong value on the favorite'],
+    value: 0.63,
+    risk: 1,
+    status: 'active',
+    label: 'Knicks',
+  },
+  {
+    id: 'p2',
+    title: 'Celtics vs Heat',
+    sport: 'basketball_nba',
+    market: 'Spread',
+    side: 'Heat +3.5',
+    odds: 105,
+    fair: 0.58,
+    confidence: 'Medium',
+    units: 1,
+    edge: 8,
+    note: 'Live matchup edge',
+    notes: ['Live matchup edge'],
+    value: 0.58,
+    risk: 1,
+    status: 'active',
+    label: 'Celtics vs Heat',
+  },
+  {
+    id: 'p3',
+    title: 'Mets vs Braves',
+    sport: 'baseball_mlb',
+    market: 'Moneyline',
+    side: 'Mets',
+    odds: 120,
+    fair: 0.55,
+    confidence: 'Low',
+    units: 1,
+    edge: 5,
+    note: 'Value is softer but still live',
+    notes: ['Value is softer but still live'],
+    value: 0.55,
+    risk: 1,
+    status: 'active',
+    label: 'Mets',
+  },
+]
+
+export function getPickGroups(): DashboardPickGroup[] {
+  return [
+    {
+      id: 'best-plays',
+      label: 'Best plays',
+      note: 'Generated from current board',
+      items: samplePicks,
+    },
+  ]
+}
+
+export const pickGroups = getPickGroups()
+
+export function buildDashboard() {
+  return {
+    groups: getPickGroups(),
+    title: 'Dashboard',
+    generatedAt: new Date().toISOString(),
+  }
+}
+
+export function buildDashboardData() {
+  return buildDashboard()
+}
+
+export function pickGrid() {
+  return getPickGroups()
+}
+
+export function buildCsv(rows: any[] = []) {
+  if (!rows.length) return ''
+  const headers = Object.keys(rows[0])
+  const csvLines = [
+    headers.join(','),
+    ...rows.map((row) =>
+      headers
+        .map((header) => {
+          const val = row[header]
+          return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : String(val ?? '')
+        })
+        .join(',')
+    ),
+  ]
+  return csvLines.join('\n')
+}
+
+export function buildDashboardCsv(rows: any[] = []) {
+  return buildCsv(rows)
+}
+
+export type { PickItem as Pick }
+
+export default {
+  samplePicks,
+  generateLocalParlays,
+  runLocalSimulation,
+  getPickGroups,
+  pickGroups,
+  buildDashboard,
+  buildDashboardData,
+  pickGrid,
+  buildCsv,
+  buildDashboardCsv,
 }
