@@ -1,27 +1,26 @@
-// src/mockData.ts
 export type PickItem = {
-  id?: string
+  id: string
   title: string
-  sport?: string
-  market?: string
-  side?: string
-  odds?: number
-  fair?: number
-  confidence?: 'High' | 'Medium' | 'Low'
-  units?: number
-  edge?: number
-  note?: string
-  notes?: string[]
-  value?: number
-  risk?: number
-  status?: string
-  label?: string
+  sport: string
+  market: string
+  side: string
+  odds: number
+  fair: number
+  confidence: 'High' | 'Medium' | 'Low'
+  units: number
+  edge: number
+  note: string
+  notes: string[]
+  value: number
+  risk: number
+  status: string
+  label: string
 }
 
 export type DashboardPickGroup = {
   id: string
   label: string
-  note?: string
+  note: string
   items: PickItem[]
 }
 
@@ -58,12 +57,12 @@ function probabilityToPayoutMultiplier(p: number, vig = 0.95) {
 function normalizePick(item: any): PickItem {
   const fair = typeof item?.fair === 'number' ? item.fair : 0.5
   return {
-    id: item?.id ?? item?.title ?? Math.random().toString(36).slice(2),
+    id: String(item?.id ?? item?.title ?? Math.random().toString(36).slice(2)),
     title: item?.title ?? 'Untitled pick',
     sport: item?.sport ?? 'basketball_nba',
     market: item?.market ?? 'Moneyline',
     side: item?.side ?? 'Pick',
-    odds: item?.odds ?? 100,
+    odds: typeof item?.odds === 'number' ? item.odds : 100,
     fair,
     confidence: item?.confidence ?? 'Medium',
     units: typeof item?.units === 'number' ? item.units : 1,
@@ -89,19 +88,18 @@ export function generateLocalParlays(
 
   const picks = events
     .map(normalizePick)
-    .sort((a, b) => (b.fair ?? 0) - (a.fair ?? 0))
+    .sort((a, b) => b.fair - a.fair)
     .slice(0, topN)
 
   const parlays: Parlay[] = []
 
-  // single-leg
   for (let i = 0; i < picks.length; i++) {
     const pick = picks[i]
-    const prob = Math.min(0.9999, Math.max(0.0001, pick.fair ?? 0))
+    const prob = Math.min(0.9999, Math.max(0.0001, pick.fair))
     const payout = probabilityToPayoutMultiplier(prob)
     parlays.push({
       id: `parlay-1-${i}`,
-      label: `${pick.title} — ${pick.side ?? ''}`.trim(),
+      label: `${pick.title} — ${pick.side}`.trim(),
       legs: [pick],
       probability: prob,
       payoutMultiplier: payout,
@@ -116,7 +114,7 @@ export function generateLocalParlays(
         const legs = [picks[i], picks[j]]
         const prob = Math.max(
           0.000001,
-          product(legs.map((l) => Math.min(0.9999, Math.max(0.0001, l.fair ?? 0))))
+          product(legs.map((l) => Math.min(0.9999, Math.max(0.0001, l.fair))))
         )
         const payout = probabilityToPayoutMultiplier(prob)
         parlays.push({
@@ -131,31 +129,7 @@ export function generateLocalParlays(
     }
   }
 
-  if (mLegs >= 3) {
-    const limit = Math.min(8, picks.length)
-    for (let i = 0; i < limit; i++) {
-      for (let j = i + 1; j < limit; j++) {
-        for (let k = j + 1; k < limit; k++) {
-          const legs = [picks[i], picks[j], picks[k]]
-          const prob = Math.max(
-            0.000001,
-            product(legs.map((l) => Math.min(0.9999, Math.max(0.0001, l.fair ?? 0))))
-          )
-          const payout = probabilityToPayoutMultiplier(prob)
-          parlays.push({
-            id: `parlay-3-${i}-${j}-${k}`,
-            label: `${legs[0].title} + ${legs[1].title} + ${legs[2].title}`,
-            legs,
-            probability: prob,
-            payoutMultiplier: payout,
-            expectedValue: payout * prob - 1,
-          })
-        }
-      }
-    }
-  }
-
-  return parlays.sort((a, b) => (b.probability ?? 0) - (a.probability ?? 0))
+  return parlays.sort((a, b) => b.probability - a.probability)
 }
 
 export function runLocalSimulation(
@@ -183,22 +157,11 @@ export function runLocalSimulation(
   let totalStake = 0
   let totalReturn = 0
 
-  function itemProbAndMultiplier(it: any) {
-    if (it && Array.isArray(it.legs)) {
-      const p = Math.min(0.999999, Math.max(0, it.probability ?? product(it.legs.map((l: any) => l.fair ?? 0))))
-      const mult = it.payoutMultiplier ?? probabilityToPayoutMultiplier(p)
-      return { p, mult }
-    }
-
-    const p = Math.min(0.999999, Math.max(0, it?.fair ?? 0))
-    const mult = probabilityToPayoutMultiplier(p)
-    return { p, mult }
-  }
-
   for (let t = 0; t < trials; t++) {
     for (const it of items) {
       const normalized = normalizePick(it)
-      const { p, mult } = itemProbAndMultiplier(normalized)
+      const p = Math.min(0.999999, Math.max(0, normalized.fair))
+      const mult = probabilityToPayoutMultiplier(p)
       totalStake += stakePerBet
       const roll = Math.random()
       if (roll < p) {
@@ -232,12 +195,17 @@ export const samplePicks: PickItem[] = [
     sport: 'basketball_nba',
     market: 'Moneyline',
     side: 'Knicks',
+    odds: 110,
     fair: 0.63,
     confidence: 'High',
     units: 1,
+    edge: 13,
     note: 'Strong value on the favorite',
     notes: ['Strong value on the favorite'],
-    edge: 13,
+    value: 0.63,
+    risk: 1,
+    status: 'active',
+    label: 'Knicks',
   },
   {
     id: 'p2',
@@ -245,12 +213,17 @@ export const samplePicks: PickItem[] = [
     sport: 'basketball_nba',
     market: 'Spread',
     side: 'Heat +3.5',
+    odds: 105,
     fair: 0.58,
     confidence: 'Medium',
     units: 1,
+    edge: 8,
     note: 'Live matchup edge',
     notes: ['Live matchup edge'],
-    edge: 8,
+    value: 0.58,
+    risk: 1,
+    status: 'active',
+    label: 'Celtics vs Heat',
   },
   {
     id: 'p3',
@@ -258,12 +231,17 @@ export const samplePicks: PickItem[] = [
     sport: 'baseball_mlb',
     market: 'Moneyline',
     side: 'Mets',
+    odds: 120,
     fair: 0.55,
     confidence: 'Low',
     units: 1,
+    edge: 5,
     note: 'Value is softer but still live',
     notes: ['Value is softer but still live'],
-    edge: 5,
+    value: 0.55,
+    risk: 1,
+    status: 'active',
+    label: 'Mets',
   },
 ]
 
@@ -317,7 +295,6 @@ export function buildDashboardCsv(rows: any[] = []) {
   return buildCsv(rows)
 }
 
-// Important: for isolatedModules, this must be `export type`, not `export { ... }`
 export type { PickItem as Pick }
 
 export default {
