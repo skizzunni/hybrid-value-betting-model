@@ -19,6 +19,7 @@ export type LedgerEntry = {
   clv?: number
   ticketId?: string
   combinedProbability?: number
+  edgeQuality?: 'strong' | 'medium' | 'weak' | 'breakeven' | 'negative'
   /** Side of the bet (straights) or of the ticket's single selection. */
   side?: Side
   /** Optional per-leg tracking. */
@@ -92,7 +93,13 @@ export function loadLedger(): LedgerEntry[] {
 }
 
 export function saveTicketResult(
-  ticket: Ticket | { name: string; legs: unknown[]; id?: string; combinedProbability?: number },
+  ticket: Ticket | {
+    name: string
+    legs: unknown[]
+    id?: string
+    combinedProbability?: number
+    edgeQuality?: LedgerEntry['edgeQuality']
+  },
   stake: number,
   hit: boolean,
   payout: number,
@@ -112,6 +119,7 @@ export function saveTicketResult(
     clv,
     ticketId,
     combinedProbability: ticket.combinedProbability,
+    edgeQuality: 'edgeQuality' in ticket ? ticket.edgeQuality : undefined,
     ...extra,
   }
   const storage = getStorage()

@@ -8,6 +8,7 @@ import LineChart from '../components/LineChart'
 import PageHeader from '../components/PageHeader'
 import Stat from '../components/Stat'
 import { clearLedger, getLedgerSummary, getSideCalibration, getSidedResults, loadLedger, type AnalyticsSide, type CalibrationPoint, type LedgerEntry } from '../engine/ledger'
+import { getCalibration } from '../engine/calibration'
 import { currency, percent, probability, signedCurrency, signedPercent } from '../lib/format'
 
 const columns: Column<LedgerEntry>[] = [
@@ -70,6 +71,15 @@ export default function Analytics() {
   const summary = useMemo(() => getLedgerSummary(entries), [entries])
   const sided = useMemo(() => getSidedResults(entries), [entries])
   const calibration = useMemo(() => getSideCalibration(entries), [entries])
+  const modelCalibration = useMemo(() => getCalibration(), [entries])
+  const edgeTierRoi = useMemo(() => (
+    ['strong', 'medium', 'weak', 'breakeven', 'negative'] as const
+  ).map((tier) => {
+    const tierEntries = entries.filter((entry) => entry.edgeQuality === tier)
+    const staked = tierEntries.reduce((sum, entry) => sum + entry.stake, 0)
+    const returned = tierEntries.reduce((sum, entry) => sum + entry.payout, 0)
+    return { tier, count: tierEntries.length, roi: staked > 0 ? (returned - staked) / staked : undefined }
+  }), [entries])
   const sorted = useMemo(() => [...entries].sort((a, b) => b.timestamp - a.timestamp), [entries])
   const curve = useMemo(() => {
     const out = [0]
@@ -136,6 +146,30 @@ export default function Analytics() {
           </Card>
         </div>
       )}
+      <Card title={`Model calibration · Brier ${modelCalibration.brierScore.toFixed(4)}`}>
+        <p className="leg-sub">Computed from resolved predictions only. Lower Brier score is better; reliability points near the diagonal are better calibrated.</p>
+        {modelCalibration.buckets.length === 0 ? <EmptyState title="No resolved predictions" description="Log settled straight bets to populate the reliability diagram." /> : (
+          <svg viewBox="0 0 100 100" role="img" aria-label="Reliability diagram: predicted probability versus actual win rate" style={{ width: 'min(100%, 320px)', background: 'rgba(2,6,23,0.45)' }}>
+            <line x1="10" y1="90" x2="90" y2="10" stroke="#64748b" strokeDasharray="3 2" />
+            {modelCalibration.buckets.map((bucket) => (
+              <circle key={bucket.predicted} cx={10 + bucket.predicted * 80} cy={90 - bucket.actualRate * 80} r="2.5" fill="#34d399">
+                <title>{`Predicted ${(bucket.predicted * 100).toFixed(0)}%, actual ${(bucket.actualRate * 100).toFixed(0)}%, n=${bucket.count}`}</title>
+              </circle>
+            ))}
+          </svg>
+        )}
+      </Card>
+      <Card title="ROI by edge quality">
+        <div className="bar-stack">
+          {edgeTierRoi.map(({ tier, count, roi }) => (
+            <div key={tier} className="bar-row">
+              <span>{tier}</span>
+              <div className="bar-track">{roi !== undefined && <span style={{ width: `${Math.min(100, Math.abs(roi) * 100)}%` }} />}</div>
+              <strong>{roi === undefined ? `— (${count})` : `${signedPercent(roi, 1)} (${count})`}</strong>
+            </div>
+          ))}
+        </div>
+      </Card>
       <Disclaimer />
     </>
   )
