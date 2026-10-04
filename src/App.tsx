@@ -4,7 +4,7 @@ import Dashboard from './pages/Dashboard'
 import Home from './pages/Home'
 import Simulator from './pages/Simulator'
 import Analytics from './pages/Analytics'
-import './index.css'
+import Parlays from './pages/Parlays'
 
 export default function App() {
   return (
@@ -24,6 +24,7 @@ export default function App() {
             <Link to="/dashboard">Dashboard</Link>
             <Link to="/simulator">Simulator</Link>
             <Link to="/analytics">Analytics</Link>
+            <Link to="/parlays">Parlays</Link>
           </nav>
 
           <div style={{ display: 'flex', gap: 8 }}>
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/simulator" element={<Simulator />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/parlays" element={<Parlays />} />
         </Routes>
       </main>
     </BrowserRouter>
