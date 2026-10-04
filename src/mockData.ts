@@ -1,168 +1,236 @@
-export type PickItem = {
-  id: string
-  sport: string
-  market: string
+// Lightweight mockData.ts
+// Exports:
+// - generateLocalParlays(events, opts)
+// - runLocalSimulation(picksOrParlays, options)
+// - example data: samplePicks
+//
+// This is intentionally conservative and self-contained so the site can build.
+// Replace with your production implementations later.
+
+export type Pick = {
+  id?: string
   title: string
-  side: string
-  odds: number
-  fair: number
-  edge: number
-  confidence: 'Low' | 'Medium' | 'High'
-  units: number
-  notes: string[]
+  sport?: string
+  market?: string
+  side?: string
+  odds?: number // american odds or undefined
+  fair: number // model-implied probability [0..1]
+  confidence?: 'High' | 'Medium' | 'Low'
+  units?: number
+  notes?: string[]
 }
 
-export type PickGroup = {
+export type Parlay = {
   id: string
   label: string
-  note: string
-  items: PickItem[]
+  legs: Pick[]
+  probability: number // combined win prob [0..1]
+  payoutMultiplier: number // how many units returned per 1 unit stake (including stake)
+  expectedValue?: number
 }
 
-const range = (count: number) => Array.from({ length: count }, (_, i) => i)
+export type SimulationResult = {
+  trials: number
+  wins: number
+  losses: number
+  totalStake: number
+  totalReturn: number
+  roi: number // (totalReturn - totalStake) / totalStake
+  avgProfitPerTrial: number
+  summary: string
+}
 
-const moneylineGames = [
-  ['Chiefs', 'Bills'], ['Eagles', 'Cowboys'], ['49ers', 'Rams'], ['Bengals', 'Steelers'], ['Lions', 'Packers'],
-  ['Jets', 'Patriots'], ['Dolphins', 'Bills'], ['Buccaneers', 'Saints'], ['Texans', 'Jaguars'], ['Vikings', 'Bears'],
-  ['Ravens', 'Browns'], ['Chargers', 'Raiders'], ['Seahawks', 'Cardinals'], ['Giants', 'Commanders'], ['Falcons', 'Panthers'],
-  ['Bears', 'Lions'], ['Colts', 'Titans'], ['Broncos', 'Chiefs'], ['Steelers', 'Ravens'], ['Saints', 'Falcons'],
-  ['Cowboys', 'Eagles'], ['Packers', 'Vikings'], ['Jaguars', 'Texans'], ['Rams', 'Seahawks'], ['Browns', 'Steelers'],
-]
+// Helper: safe numeric product
+function product(nums: number[]) {
+  return nums.reduce((s, n) => s * n, 1)
+}
 
-const playerList = [
-  'Patrick Mahomes', 'Jalen Hurts', 'Josh Allen', 'Christian McCaffrey', 'Ja Morant', 'Nikola Jokic',
-  'Jayson Tatum', 'Shai Gilgeous-Alexander', 'Anthony Edwards', 'Devin Booker', 'Kyrie Irving', 'Chet Holmgren',
-  'Mookie Betts', 'Shohei Ohtani', 'Jose Ramirez', 'Aaron Judge', 'Connor McDavid', 'Nathan MacKinnon',
-  'Jack Hughes', 'Alex Ovechkin', 'Luis Robert', 'Bryce Harper', 'Rasmus Dahlin', 'Erling Haaland',
-]
+// Convert a win probability to a conservative payout multiplier.
+// We use a small "vig" factor so payouts are a bit less generous than pure fair odds.
+function probabilityToPayoutMultiplier(p: number, vig = 0.95) {
+  if (p <= 0) return 0
+  const decimalOdds = 1 / p
+  // apply vig by shrinking decimal odds slightly
+  return Math.max(1, decimalOdds * vig)
+}
 
-const totalsList = [
-  'Chiefs/Bills Over 48.5', 'Eagles/Cowboys Over 52.5', '49ers/Rams Under 45.5', 'Bengals/Steelers Over 39.5',
-  'Lions/Packers Over 50.5', 'Jets/Patriots Under 39.5', 'Dolphins/Bills Over 46.5', 'Bucs/Saints Over 41.5',
-  'Texans/Jags Over 43.5', 'Vikings/Bears Under 45.5', 'Ravens/Browns Under 44.5', 'Chargers/Raiders Over 48.5',
-  'Seahawks/Cardinals Over 43.5', 'Giants/Commanders Over 43.5', 'Falcons/Panthers Under 42.5', 'Bears/Lions Over 48.5',
-  'Colts/Titans Under 42.5', 'Broncos/Chiefs Under 46.5', 'Steelers/Ravens Under 38.5', 'Saints/Falcons Over 39.5',
-  'Cowboys/Eagles Over 51.5', 'Packers/Vikings Over 49.5', 'Jaguars/Texans Under 44.5', 'Rams/Seahawks Under 46.5', 'Browns/Steelers Over 36.5',
-]
+// Generate simple parlays from an array of picks.
+// - events param is an array of Pick items (e.g., from src/generated/picks.json -> items).
+// - opts:
+//    maxLegs: max number of legs in a parlay (1..3 usually)
+//    topN: only consider topN picks by fair probability (to limit combinations)
+export function generateLocalParlays(events: Pick[] = [], opts: { maxLegs?: number; topN?: number } = {}): Parlay[] {
+  const maxLegs = Math.max(1, Math.min(3, opts.maxLegs ?? 2))
+  const topN = Math.max(5, opts.topN ?? 20)
 
-const createMoneylines = (): PickItem[] =>
-  moneylineGames.map(([home, away], index) => ({
-    id: `ml-${index + 1}`,
-    sport: 'Multi-sport',
-    market: 'Moneyline',
-    title: `${home} vs ${away}`,
-    side: home,
-    odds: -170 - (index % 5) * 15,
-    fair: 0.63 + (index % 5) * 0.025,
-    edge: Number((0.03 + ((index % 4) * 0.012)).toFixed(2)),
-    confidence: index % 3 === 0 ? 'High' : index % 2 === 0 ? 'Medium' : 'Low',
-    units: index % 3 === 0 ? 1.5 : 1,
-    notes: ['Strong home edge', 'Rest advantages', 'Line soft vs market'],
-  }))
+  // sort picks by fair descending (most confident first)
+  const picks = events.slice().sort((a, b) => (b.fair ?? 0) - (a.fair ?? 0)).slice(0, topN)
 
-const createProps = (): PickItem[] =>
-  playerList.map((player, index) => ({
-    id: `prop-${index + 1}`,
-    sport: index % 2 === 0 ? 'NBA' : index % 3 === 0 ? 'NFL' : 'MLB',
-    market: 'Player prop',
-    title: player,
-    side: index % 2 === 0 ? 'Over' : 'Under',
-    odds: -210 - (index % 6) * 18,
-    fair: 0.68 + (index % 5) * 0.022,
-    edge: Number((0.05 + ((index % 3) * 0.012)).toFixed(2)),
-    confidence: index % 3 === 0 ? 'High' : index % 2 === 0 ? 'Medium' : 'Low',
-    units: 1,
-    notes: ['Usage profile supports the number', 'Recent form is stable', 'Team script favors the prop'],
-  }))
+  const parlays: Parlay[] = []
 
-const createTotals = (): PickItem[] =>
-  totalsList.map((label, index) => ({
-    id: `total-${index + 1}`,
-    sport: 'Multi-sport',
-    market: 'Total',
-    title: label,
-    side: label.includes('Over') ? 'Over' : 'Under',
-    odds: -175 - (index % 5) * 20,
-    fair: 0.61 + (index % 4) * 0.03,
-    edge: Number((0.04 + ((index % 4) * 0.015)).toFixed(2)),
-    confidence: index % 2 === 0 ? 'High' : 'Medium',
-    units: index % 3 === 0 ? 1.5 : 1,
-    notes: ['Pace mismatch', 'Weather or game script supports the total', 'Recent trends are favorable'],
-  }))
-
-const createHighConfidence = (): PickItem[] =>
-  range(25).map((_, index) => ({
-    id: `safe-${index + 1}`,
-    sport: ['NFL', 'NBA', 'MLB', 'NHL', 'Soccer'][index % 5],
-    market: ['Moneyline', 'Player prop', 'Team total', 'Total', 'Spread'][index % 5],
-    title: ['Home favorite', 'Star scorer prop', 'Team total over', 'Total over', 'Short spread'][index % 5],
-    side: index % 2 === 0 ? 'Yes' : 'No',
-    odds: -220 - (index % 4) * 25,
-    fair: 0.72 + (index % 5) * 0.018,
-    edge: Number((0.06 + (index % 4) * 0.016).toFixed(2)),
-    confidence: 'High',
-    units: 0.5 + (index % 3) * 0.5,
-    notes: ['Clear matchup edge', 'Market line is too generous', 'No major risk factor is in play'],
-  }))
-
-const createCombined = (): PickItem[] =>
-  range(25).map((_, index) => ({
-    id: `combo-${index + 1}`,
-    sport: ['NFL', 'NBA', 'MLB', 'NHL', 'Soccer'][index % 5],
-    market: 'Combined',
-    title: `${['Tufts', 'Falcons', 'Knicks', 'Mets', 'Maple Leafs'][index % 5]} + ${['Over', 'Home side', 'Top scorer', 'Pitcher prop', 'Total'][index % 5]}`,
-    side: 'Combo',
-    odds: -150 - (index % 4) * 30,
-    fair: 0.65 + (index % 6) * 0.02,
-    edge: Number((0.05 + (index % 4) * 0.015).toFixed(2)),
-    confidence: index % 2 === 0 ? 'High' : 'Medium',
-    units: 0.5,
-    notes: ['Strong correlation', 'All legs fit the same theme', 'Higher probability than a random parlay'],
-  }))
-
-export const pickGroups: PickGroup[] = [
-  { id: 'moneylines', label: 'Moneylines', note: 'Best home favorites and soft market edges', items: createMoneylines() },
-  { id: 'player-props', label: 'Player Props', note: 'High-volume usage and matchup-driven props', items: createProps() },
-  { id: 'totals', label: 'Totals', note: 'Excellent totals where pace and environment match the model', items: createTotals() },
-  { id: 'most-confident', label: 'Most Confident', note: 'The cleanest 25 high-probability legs', items: createHighConfidence() },
-  { id: 'combo', label: 'Combined', note: 'Correlated game/script combos with safer probability', items: createCombined() },
-]
-
-export const allPicks = pickGroups.flatMap((group) => group.items)
-
-export async function loadLiveOdds() {
-  const apiKey = import.meta.env.VITE_ODDS_API_KEY
-  if (!apiKey) {
-    return { source: 'seed', groups: pickGroups }
+  // single-leg parlays (pass-through, useful for UI)
+  for (let i = 0; i < picks.length; i++) {
+    const pick = picks[i]
+    const prob = Math.min(0.9999, Math.max(0.0001, pick.fair ?? 0))
+    const payout = probabilityToPayoutMultiplier(prob)
+    parlays.push({
+      id: `parlay-1-${i}`,
+      label: `${pick.title} — ${pick.side ?? ''}`.trim(),
+      legs: [pick],
+      probability: prob,
+      payoutMultiplier: payout,
+      expectedValue: (payout * prob) - 1, // per 1 unit stake
+    })
   }
 
-  try {
-    const sportsResponse = await fetch(`https://api.the-odds-api.com/v4/sports?apiKey=${apiKey}`)
-    if (!sportsResponse.ok) throw new Error('Bad live odds response')
-    const sports = await sportsResponse.json()
-
-    return {
-      source: 'live',
-      groups: pickGroups,
-      sports: Array.isArray(sports) ? sports.slice(0, 10) : [],
+  // multi-leg parlays (naive combinations of top picks)
+  if (maxLegs >= 2) {
+    // Create 2-leg combos
+    for (let i = 0; i < picks.length; i++) {
+      for (let j = i + 1; j < picks.length; j++) {
+        const legs = [picks[i], picks[j]]
+        const prob = Math.max(0.000001, product(legs.map((l) => Math.min(0.9999, Math.max(0.0001, l.fair ?? 0)))))
+        const payout = probabilityToPayoutMultiplier(prob)
+        parlays.push({
+          id: `parlay-2-${i}-${j}`,
+          label: `${legs[0].title} + ${legs[1].title}`,
+          legs,
+          probability: prob,
+          payoutMultiplier: payout,
+          expectedValue: (payout * prob) - 1,
+        })
+      }
     }
-  } catch {
-    return { source: 'seed', groups: pickGroups }
+  }
+
+  if (maxLegs >= 3) {
+    // Create a small set of 3-leg combos from top picks (only first N to avoid explosion)
+    const limit = Math.min(10, picks.length)
+    for (let i = 0; i < limit; i++) {
+      for (let j = i + 1; j < limit; j++) {
+        for (let k = j + 1; k < limit; k++) {
+          const legs = [picks[i], picks[j], picks[k]]
+          const prob = Math.max(0.000001, product(legs.map((l) => Math.min(0.9999, Math.max(0.0001, l.fair ?? 0)))))
+          const payout = probabilityToPayoutMultiplier(prob)
+          parlays.push({
+            id: `parlay-3-${i}-${j}-${k}`,
+            label: `${legs[0].title} + ${legs[1].title} + ${legs[2].title}`,
+            legs,
+            probability: prob,
+            payoutMultiplier: payout,
+            expectedValue: (payout * prob) - 1,
+          })
+        }
+      }
+    }
+  }
+
+  // sort parlays by probability descending (most likely first)
+  return parlays.sort((a, b) => b.probability - a.probability)
+}
+
+// Run a Monte Carlo simulation for picks or parlays.
+// - If passed Picks (single-leg), it treats each item as an independent bet per trial.
+// - If passed Parlays (with legs), it treats each parlay as a single bet whose win chance is parlay.probability.
+// - options:
+//    trials: number of iterations (default 5000)
+//    stakePerBet: units staked per bet each trial (default 1)
+//    return detailed object with ROI and summary
+export function runLocalSimulation(items: (Pick | Parlay)[], options: { trials?: number; stakePerBet?: number } = {}): SimulationResult {
+  const trials = options.trials ?? 5000
+  const stakePerBet = options.stakePerBet ?? 1
+
+  let wins = 0
+  let losses = 0
+  let totalStake = 0
+  let totalReturn = 0
+
+  // Helper to get win probability and payout multiplier for an item
+  function itemProbAndMultiplier(it: Pick | Parlay): { p: number; mult: number } {
+    if ('legs' in it) {
+      // Parlay
+      const p = Math.min(0.999999, Math.max(0, it.probability ?? product(it.legs.map((l) => l.fair ?? 0))))
+      const mult = it.payoutMultiplier ?? probabilityToPayoutMultiplier(p)
+      return { p, mult }
+    } else {
+      const p = Math.min(0.999999, Math.max(0, it.fair ?? 0))
+      const mult = probabilityToPayoutMultiplier(p)
+      return { p, mult }
+    }
+  }
+
+  for (let t = 0; t < trials; t++) {
+    // Simulate placing one bet on each item in items for this trial
+    for (const it of items) {
+      const { p, mult } = itemProbAndMultiplier(it)
+      totalStake += stakePerBet
+      const roll = Math.random()
+      if (roll < p) {
+        // win: receive payout * stake (we treat multiplier as including stake)
+        const ret = stakePerBet * mult
+        totalReturn += ret
+        wins += 1
+      } else {
+        // lose: receive nothing, stake lost
+        losses += 1
+      }
+    }
+  }
+
+  const roi = totalStake > 0 ? (totalReturn - totalStake) / totalStake : 0
+  const avgProfitPerTrial = (totalReturn - totalStake) / trials
+
+  const summary = `Simulated ${trials} trials, ${items.length} items per trial, total bets ${trials * items.length}. Wins: ${wins}, Losses: ${losses}, ROI: ${(roi * 100).toFixed(2)}%.`
+
+  return {
+    trials,
+    wins,
+    losses,
+    totalStake,
+    totalReturn,
+    roi,
+    avgProfitPerTrial,
+    summary,
   }
 }
 
-export function buildCsv(rows: PickItem[]) {
-  const headers = ['sport', 'market', 'title', 'side', 'odds', 'fair', 'edge', 'confidence', 'units']
-  const csvRows = rows.map((row) => [
-    row.sport,
-    row.market,
-    row.title,
-    row.side,
-    row.odds,
-    row.fair,
-    row.edge,
-    row.confidence,
-    row.units,
-  ])
-  return [headers, ...csvRows].map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
+// Example sample picks (used by UI if it expects some mock data)
+export const samplePicks: Pick[] = [
+  {
+    id: 'p1',
+    title: 'Team A vs Team B',
+    sport: 'basketball_nba',
+    market: 'Moneyline',
+    side: 'Team A',
+    fair: 0.65,
+    confidence: 'High',
+    units: 1,
+  },
+  {
+    id: 'p2',
+    title: 'Team C vs Team D',
+    sport: 'basketball_nba',
+    market: 'Total',
+    side: 'Over 210.5',
+    fair: 0.58,
+    confidence: 'Medium',
+    units: 1,
+  },
+  {
+    id: 'p3',
+    title: 'Team E vs Team F',
+    sport: 'basketball_nba',
+    market: 'Spread',
+    side: 'Team F +4.5',
+    fair: 0.53,
+    confidence: 'Low',
+    units: 1,
+  },
+]
+
+// Default export optional (not required)
+export default {
+  generateLocalParlays,
+  runLocalSimulation,
+  samplePicks,
 }
