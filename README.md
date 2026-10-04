@@ -62,3 +62,7 @@ const menu = generateDailyMenu(legs, { lotteryLegs: 25, minProbability: 0.55 })
 ```
 
 Set `VITE_ODDS_API_KEY` to load odds from The Odds API. Without a key (or if the request fails), the UI uses the repository's sample picks.
+
+## Deploying on Render (SPA routing)
+
+`render.yaml` declares a rewrite (`/*` -> `/index.html`) so that refreshing client-side routes such as `/tickets` works. If the service was created manually in the Render dashboard (not from the blueprint), `render.yaml` is ignored: add the rewrite under **Redirects/Rewrites** (Source `/*`, Destination `/index.html`, Action `Rewrite`).

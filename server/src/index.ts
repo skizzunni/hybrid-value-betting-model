@@ -15,16 +15,21 @@ app.get('/api/tickets', (req, res) => res.json(getTickets(db)))
 app.get('/api/metrics', (req, res) => res.json(getMetrics(db)))
 
 app.post('/api/simulate', (req, res) => {
-  const { fair, trials } = req.body
-  const t = Number(trials) || 10000
+  const { fair, trials } = req.body ?? {}
+  const t = Math.floor(Number(trials) || 10000)
   const f = Number(fair) || 0.55
+  if (!(f > 0 && f < 1) || t < 1 || t > 1_000_000) {
+    return res.status(400).json({ error: 'fair must be in (0,1) and trials in 1..1000000' })
+  }
   res.json(runSimulation(f, t))
 })
 
 app.post('/api/tickets/:name/resolve', (req, res) => {
   const { name } = req.params
-  const outcome = !!req.body.outcome
-  res.json(updateTicketResult(db, name, outcome))
+  const outcome = !!req.body?.outcome
+  const updated = updateTicketResult(db, name, outcome)
+  if (!updated) return res.status(404).json({ error: 'Ticket not found' })
+  res.json(updated)
 })
 
 app.post('/api/parlays', (req, res) => {

@@ -1,7 +1,12 @@
 services:
-  - type: static_site
+  - type: web
+    runtime: static
     name: hybrid-value-betting-model
     repo: https://github.com/skizzunni/hybrid-value-betting-model
     branch: main
-    buildCommand: "npm install && npm run build"
-    publishPath: "dist"
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
