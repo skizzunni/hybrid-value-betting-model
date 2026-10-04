@@ -1,4 +1,29 @@
-import { pickGroups, buildCsv } from '../mockData'
+import Badge from '../components/Badge'
+import Card from '../components/Card'
+import DataTable, { type Column } from '../components/DataTable'
+import Disclaimer from '../components/Disclaimer'
+import EmptyState from '../components/EmptyState'
+import PageHeader from '../components/PageHeader'
+import ProbabilityBar from '../components/ProbabilityBar'
+import { pickGroups, buildCsv, type PickItem } from '../mockData'
+import { americanOdds, sportLabel } from '../lib/format'
+
+const columns: Column<PickItem>[] = [
+  {
+    key: 'pick',
+    header: 'Pick',
+    render: (it) => (
+      <>
+        <div className="leg-title">{it.label}</div>
+        <div className="leg-sub">{it.note}</div>
+      </>
+    ),
+  },
+  { key: 'sport', header: 'Sport', render: (it) => sportLabel(it.sport) },
+  { key: 'odds', header: 'Odds', align: 'right', mono: true, render: (it) => americanOdds(it.odds) },
+  { key: 'fair', header: 'Fair prob', render: (it) => <ProbabilityBar value={it.fair} label={`Fair probability for ${it.label}`} /> },
+  { key: 'units', header: 'Units', align: 'right', render: (it) => it.units },
+]
 
 export default function Dashboard() {
   const groups = pickGroups
@@ -16,37 +41,29 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container page-space">
-      <section className="section-panel board-panel">
-        <div className="section-head">
-          <h2>Dashboard</h2>
-        </div>
-
-        <div style={{ marginTop: 16 }}>
-          <button className="primary-btn" onClick={downloadCsv}>Download CSV</button>
-        </div>
-
-        <div style={{ marginTop: 16 }}>
+    <>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Pick groups from the repository's sample picks."
+        actions={
+          <>
+            <Badge kind="demo">Sample data</Badge>
+            <button type="button" className="btn" onClick={downloadCsv}>Download CSV</button>
+          </>
+        }
+      />
+      {groups.length === 0 ? (
+        <EmptyState title="No picks" description="There are no pick groups to show." />
+      ) : (
+        <div className="stack-lg">
           {groups.map((group) => (
-            <div key={group.id} style={{ marginBottom: 20 }}>
-              <h3 style={{ marginBottom: 8 }}>{group.label}</h3>
-              <div style={{ display: 'grid', gap: 8 }}>
-                {group.items.map((it) => (
-                  <div key={it.id} style={{ padding: 10, border: '1px solid rgba(148,163,184,0.12)', borderRadius: 8 }}>
-                    <strong>{it.label}</strong>
-                    <div style={{ color: '#94a3b8' }}>{it.note}</div>
-                    <div style={{ marginTop: 6 }}>
-                      <span style={{ marginRight: 12 }}>Fair: {it.fair}</span>
-                      <span style={{ marginRight: 12 }}>Odds: {it.odds}</span>
-                      <span>Units: {it.units}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Card key={group.id} title={group.label} padded={false}>
+              <DataTable columns={columns} rows={group.items} rowKey={(it) => it.id} caption={group.label} />
+            </Card>
           ))}
         </div>
-      </section>
-    </div>
+      )}
+      <Disclaimer />
+    </>
   )
 }

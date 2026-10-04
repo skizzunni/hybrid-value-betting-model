@@ -104,3 +104,22 @@ Set `VITE_ODDS_API_KEY` to load odds from The Odds API. Without a key (or if the
 request fails), the UI uses the repository's sample picks, clearly marked as
 sample data and without claiming an edge from the default model. A `VITE_` API
 key is bundled into public frontend code; use a backend proxy for a private key.
+
+## Straights vs Parlays
+
+Straights and parlays follow different selection rules (`mode: 'parlays' | 'straights' | 'mixed'`, default `mixed`):
+
+- **Parlays** keep the >= 55% probability floor, correlation caps and lottery/winnable logic. A long ticket needs legs that win often.
+- **Straights** use edge only (`filterByEdgeOnly`, default minimum edge 0.5%). There is no probability floor, so underdogs qualify.
+
+Profits come from finding price edges, not from picking winners. Underdogs can be profitable if they're underpriced. Example: a +150 dog implies 40%; if its true chance is 42%, it is a +EV straight bet (edge +2%). It has a 58% chance of losing, so it would drag down a 25-leg parlay, which needs every leg to win.
+
+How to evaluate them: judge by edge and by closing-line value, not by hit rate. Underdog results are high variance (losing streaks are normal even with a real edge), so the Analytics page reports ROI, hit rate and edge by side (favorite, underdog) and needs hundreds of bets before it says anything. With the default market-based model there is no edge over the market; underdog value only appears when your own `ProbabilityModel` disagrees with the price.
+
+The UI uses repository sample picks without an API key (or if a request fails),
+clearly marking sample data and never treating market consensus as an independent
+model edge.
+
+## Deploying on Render (SPA routing)
+
+`render.yaml` declares a rewrite (`/*` -> `/index.html`) so that refreshing client-side routes such as `/tickets` works. If the service was created manually in the Render dashboard (not from the blueprint), `render.yaml` is ignored: add the rewrite under **Redirects/Rewrites** (Source `/*`, Destination `/index.html`, Action `Rewrite`).

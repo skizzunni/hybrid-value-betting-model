@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { americanToDecimal, buildTicketFromSpec, combinedProbabilityOfLegs, generateDailyMenu, type Leg } from './ticketBuilder'
 import { recommendStakeForTicket, tierForLeg } from './staking'
 import { compareClosingValue, noVigProbability } from './clv'
@@ -33,7 +33,7 @@ describe('ticketBuilder', () => {
     expect(t.notes.join(' ')).toMatch(/Only 1 of 25/)
   })
   it('builds honest lottery and winnable tickets', () => {
-    const menu = generateDailyMenu(mk(60))
+    const menu = generateDailyMenu(mk(60), { mode: 'parlays' })
     expect(menu).toHaveLength(8)
     for (const t of menu) {
       expect(t.combinedProbability).toBeLessThanOrEqual(combinedProbabilityOfLegs(t.legs))
@@ -73,5 +73,35 @@ describe('oddsAdapter', () => {
     const legs = await fetchOddsAsLegs()
     expect(legs.length).toBeGreaterThan(0)
     expect(legs[0].teams.length).toBeGreaterThan(0)
+  })
+})
+
+describe('render.yaml', () => {
+  it('contains the SPA rewrite and static publish path', async () => {
+    const { readFileSync } = await import('node:fs')
+    const yaml = readFileSync('render.yaml', 'utf8')
+    expect(yaml).toMatch(/type:\s*rewrite/)
+    expect(yaml).toMatch(/source:\s*\/\*/)
+    expect(yaml).toMatch(/destination:\s*\/index\.html/)
+    expect(yaml).toMatch(/staticPublishPath:\s*dist/)
+  })
+})
+
+describe('oddsAdapter robustness', () => {
+  it('survives a malformed API response and missing AbortSignal.timeout', async () => {
+    const orig = AbortSignal.timeout
+    const origFetch = globalThis.fetch
+    // @ts-expect-error simulate old browser
+    AbortSignal.timeout = undefined
+    globalThis.fetch = (async () => ({ ok: true, json: async () => ({ not: 'an array' }) })) as unknown as typeof fetch
+    vi.stubEnv('VITE_ODDS_API_KEY', 'x')
+    try {
+      const legs = await fetchOddsAsLegs()
+      expect(legs.length).toBeGreaterThan(0)
+    } finally {
+      AbortSignal.timeout = orig
+      globalThis.fetch = origFetch
+      vi.unstubAllEnvs()
+    }
   })
 })

@@ -1,105 +1,54 @@
-import { useEffect, useState } from 'react'
-import { generateLocalParlays } from '../mockData'
+import { useMemo } from 'react'
+import Badge from '../components/Badge'
+import Card from '../components/Card'
+import Disclaimer from '../components/Disclaimer'
+import EmptyState from '../components/EmptyState'
+import PageHeader from '../components/PageHeader'
+import { generateLocalParlays, type Parlay } from '../mockData'
+import { currency, multiplier, oneInN, probability, signedCurrency } from '../lib/format'
+
+function evOf(parlay: Parlay): number {
+  return parlay.expectedValue ?? parlay.probability * parlay.payoutMultiplier - 1
+}
 
 export default function ParlaysPage() {
-  const [parlays, setParlays] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    setLoading(true)
-    const results = generateLocalParlays(4, 10, 0.6, -0.01)
-    const normalized = results.map((parlay: any) => ({
-      ...parlay,
-      estProb: parlay.probability,
-      estPayout: parlay.payoutMultiplier,
-      totalEV: parlay.expectedValue ?? 0,
-      legs: (parlay.legs ?? []).map((leg: any) => ({
-        ...leg,
-        name: leg.title ?? leg.side ?? 'Pick',
-      })),
-    }))
-    setParlays(normalized)
-    setLoading(false)
-  }, [])
+  const parlays = useMemo(() => generateLocalParlays(4, 10, 0.6, -0.01), [])
 
   return (
-    <div className="container" style={{ padding: '32px 0 80px' }}>
-      <div className="section-panel board-panel">
-        <div className="section-head split-head">
-          <div className="section-head inline-head">
-            <h2>Parlay generator</h2>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 20 }}>
-          {loading ? (
-            <div style={{ color: '#94a3b8' }}>Loading candidate parlays…</div>
-          ) : parlays.length === 0 ? (
-            <div style={{ color: '#94a3b8' }}>No valid 3–6 leg parlays met the threshold.</div>
-          ) : (
-            <div style={{ display: 'grid', gap: 16 }}>
-              {parlays.map((parlay, index) => (
-                <div
-                  key={`${parlay.estProb}-${index}`}
-                  style={{
-                    border: '1px solid rgba(148,163,184,0.18)',
-                    borderRadius: 18,
-                    background: 'rgba(2,6,23,0.7)',
-                    padding: 18,
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      gap: 12,
-                      alignItems: 'center',
-                      marginBottom: 12,
-                    }}
-                  >
-                    <strong style={{ fontSize: 18 }}>Candidate #{index + 1} — {parlay.legs.length} leg{parlay.legs.length !== 1 ? 's' : ''}</strong>
-                    <div style={{ color: '#8ae7bb', fontWeight: 700 }}>
-                      Est. prob {parlay.estProb}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {(parlay.legs ?? []).map((leg: any, legIndex: number) => (
-                      <span
-                        key={`${leg.name}-${legIndex}`}
-                        style={{
-                          display: 'inline-flex',
-                          background: 'rgba(15,23,42,0.8)',
-                          border: '1px solid rgba(148,163,184,0.18)',
-                          borderRadius: 999,
-                          padding: '6px 10px',
-                          color: '#e2e8f0',
-                        }}
-                      >
-                        {leg.name}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 14,
-                      color: '#94a3b8',
-                      display: 'flex',
-                      gap: 20,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <span>Est. payout: {parlay.estPayout}</span>
-                    <span>Legs: {parlay.legs.length}</span>
-                    <span>EV: {parlay.totalEV}</span>
-                  </div>
+    <>
+      <PageHeader
+        title="Parlays"
+        subtitle="Candidate parlays built from the repository's sample picks."
+        actions={<Badge kind="demo">Sample data</Badge>}
+      />
+      {parlays.length === 0 ? (
+        <EmptyState title="No candidates" description="No valid 3–6 leg parlays met the threshold." />
+      ) : (
+        <div className="grid-cards">
+          {parlays.map((parlay, index) => {
+            const ev = evOf(parlay)
+            const legCount = parlay.legs.length
+            return (
+              <Card key={`${parlay.id}-${index}`} className="hoverable">
+                <h3 className="ticket-name">Candidate #{index + 1} — {legCount} leg{legCount !== 1 ? 's' : ''}</h3>
+                <div className="ticket-prob">{probability(parlay.probability)}</div>
+                <div className="ticket-sub">estimated probability · {oneInN(parlay.probability)}</div>
+                <div className="metrics">
+                  <div><div className="metric-label">Payout multiplier</div><div className="metric-value">{multiplier(parlay.payoutMultiplier)}</div></div>
+                  <div><div className="metric-label">$10 pays</div><div className="metric-value">{currency(parlay.payoutMultiplier * 10)}</div></div>
+                  <div><div className="metric-label">EV per $1</div><div className={`metric-value ${ev >= 0 ? 'tone-positive' : 'tone-negative'}`}>{signedCurrency(ev)}</div></div>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="chips">
+                  {parlay.legs.map((leg, i) => (
+                    <span key={`${leg.id}-${i}`} className="badge">{leg.title ?? leg.side ?? 'Pick'}</span>
+                  ))}
+                </div>
+              </Card>
+            )
+          })}
         </div>
-      </div>
-    </div>
+      )}
+      <Disclaimer />
+    </>
   )
 }

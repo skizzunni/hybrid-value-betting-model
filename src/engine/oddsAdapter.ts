@@ -65,6 +65,14 @@ const DEFAULT_SPORTS: Sport[] = [
   'icehockey_nhl',
 ]
 const MARKET_NAMES: Record<string, string> = { h2h: 'moneyline', spreads: 'spread', totals: 'total' }
+const sideOf = (americanOdds: number): 'favorite' | 'underdog' => (americanOdds >= 100 ? 'underdog' : 'favorite')
+
+function timeoutSignal(ms: number): AbortSignal {
+  if (typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms)
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), ms)
+  return controller.signal
+}
 
 function implied(americanOdds: number): number {
   const decimal = americanToDecimal(americanOdds)
@@ -134,6 +142,7 @@ function mapEvent(event: ApiEvent, model: ProbabilityModel): LegWithEdge[] {
         id: `${event.id}:${mappedMarket}:${selection}`,
         ...base,
         teams: [event.home_team, event.away_team],
+        side: sideOf(best.price),
         modelProbability: estimate(model, { ...base, modelProbability: noVig }, context),
         bookmarksUsed: booksUsed,
       }
@@ -165,6 +174,7 @@ function sampleLegs(model: ProbabilityModel): LegWithEdge[] {
       id: pick.id,
       ...base,
       teams: pick.title.split(/\s+vs\.?\s+/i).map((team) => team.trim()),
+      side: sideOf(pick.odds),
       modelProbability: estimate(model, { ...base, modelProbability: noVig }, context),
       bookmarksUsed: ['Sample data (not live)'],
     }
@@ -200,11 +210,12 @@ export async function fetchOddsAsLegs(
       }
       const response = await fetch(
         `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(sport)}/odds/?${params}`,
-        { signal: AbortSignal.timeout(10_000) },
+        { signal: timeoutSignal(10_000) },
       )
       if (!response.ok) throw new Error(`Odds API ${response.status}`)
-      const events = await response.json() as ApiEvent[]
-      for (const event of events) legs.push(...mapEvent(event, model))
+      const events = await response.json() as unknown
+      if (!Array.isArray(events)) throw new Error('Unexpected Odds API response')
+      for (const event of events as ApiEvent[]) legs.push(...mapEvent(event, model))
     }
     return legs.length ? legs : sampleLegs(model)
   } catch {

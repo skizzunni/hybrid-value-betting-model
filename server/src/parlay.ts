@@ -12,7 +12,7 @@ export function parsePercentage(v: any): number | null {
 }
 
 export function computeEV(fair: number, bookProb: number) {
-  if (!bookProb || bookProb <= 0) return fair / Math.max(0.01, bookProb) - 1
+  if (!(bookProb > 0)) return NaN
   return fair * (1 / bookProb) - 1
 }
 
@@ -23,14 +23,15 @@ export function generateHighProbParlays(
   minFair: number = 0.6,
   minEV: number = -0.01,
 ) {
-  const safeLegs = Math.max(1, Math.min(legs, 6))
+  let safeLegs = Math.max(1, Math.min(legs, 6))
   const parsed = tickets
     .map((t: any) => {
       const fair = parsePercentage(t.fair)
       const book = parsePercentage(t.book)
       const fairNum = fair !== null ? fair : undefined
       const bookProb = book !== null ? book : undefined
-      const ev = fairNum !== undefined && bookProb !== undefined ? computeEV(fairNum, bookProb) : undefined
+      const rawEv = fairNum !== undefined && bookProb !== undefined ? computeEV(fairNum, bookProb) : undefined
+      const ev = rawEv !== undefined && Number.isFinite(rawEv) ? rawEv : undefined
       return { ...t, fairNum, bookProb, ev }
     })
     .filter((t: any) => Number.isFinite(t.fairNum))
@@ -52,6 +53,7 @@ export function generateHighProbParlays(
     return (b.fairNum ?? 0) - (a.fairNum ?? 0)
   })
 
+  safeLegs = Math.min(safeLegs, candidates.length)
   const attempts = Math.max(800, count * 400)
   const resultsMap = new Map<string, any>()
 
@@ -60,7 +62,8 @@ export function generateHighProbParlays(
     const usedMarkets = new Set<string>()
     const usedGames = new Set<string>()
 
-    while (chosen.length < safeLegs) {
+    let guard = 0
+    while (chosen.length < safeLegs && guard++ < 1000) {
       const sampleTop = Math.max(6, Math.floor(candidates.length * 0.25))
       const idx = Math.floor(Math.pow(Math.random(), 1.6) * sampleTop)
       const cand = candidates[idx] || candidates[Math.floor(Math.random() * candidates.length)]
