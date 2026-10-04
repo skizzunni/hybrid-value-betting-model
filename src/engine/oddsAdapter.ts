@@ -1,8 +1,10 @@
 import { samplePicks } from '../mockData'
+import { consensusNoVig } from './devig'
+import { addEdgeInformation, type LegWithEdge } from './edgeFilter'
 import type { Leg, Sport } from './ticketBuilder'
 import { americanToDecimal } from './ticketBuilder'
-
-const sideOf = (americanOdds: number): 'favorite' | 'underdog' => (americanOdds >= 100 ? 'underdog' : 'favorite')
+import { saveSnapshot } from './oddsSnapshots'
+import { trackPrediction } from './calibration'
 
 export interface ProbabilityContext {
   sport: Sport
@@ -21,7 +23,7 @@ export interface ProbabilityModel {
 export class DefaultProbabilityModel implements ProbabilityModel {
   estimate(leg: Partial<Leg>): number {
     if (typeof leg.modelProbability === 'number') return leg.modelProbability
-    if (!leg.americanOdds) return 0.5
+    if (!leg.americanOdds) return Number.NaN
     const odds = leg.americanOdds
     return odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100)
   }
@@ -42,12 +44,18 @@ interface ApiMarket {
   outcomes: ApiOutcome[]
 }
 
+interface ApiBook {
+  key: string
+  title: string
+  markets: ApiMarket[]
+}
+
 interface ApiEvent {
   id: string
   sport_key: string
   home_team: string
   away_team: string
-  bookmakers?: { key: string; markets: ApiMarket[] }[]
+  bookmakers?: ApiBook[]
 }
 
 const DEFAULT_SPORTS: Sport[] = [
@@ -57,6 +65,7 @@ const DEFAULT_SPORTS: Sport[] = [
   'icehockey_nhl',
 ]
 const MARKET_NAMES: Record<string, string> = { h2h: 'moneyline', spreads: 'spread', totals: 'total' }
+const sideOf = (americanOdds: number): 'favorite' | 'underdog' => (americanOdds >= 100 ? 'underdog' : 'favorite')
 
 function timeoutSignal(ms: number): AbortSignal {
   if (typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms)
@@ -67,55 +76,90 @@ function timeoutSignal(ms: number): AbortSignal {
 
 function implied(americanOdds: number): number {
   const decimal = americanToDecimal(americanOdds)
-  return Number.isFinite(decimal) ? 1 / decimal : NaN
+  return Number.isFinite(decimal) ? 1 / decimal : Number.NaN
 }
 
 function estimate(model: ProbabilityModel, leg: Partial<Leg>, context: ProbabilityContext): number {
-  if (typeof model.estimate === 'function') return model.estimate(leg)
-  return model.probability?.(context) ?? Number.NaN
+  const result = typeof model.estimate === 'function'
+    ? model.estimate(leg)
+    : model.probability?.(context) ?? Number.NaN
+  return Number.isFinite(result) && result >= 0 && result <= 1 ? result : Number.NaN
 }
 
-function mapEvent(event: ApiEvent, model: ProbabilityModel): Leg[] {
-  const bookmaker = event.bookmakers?.[0]
-  if (!bookmaker) return []
+function outcomeKey(outcome: ApiOutcome): string {
+  return `${outcome.name}|${outcome.point ?? ''}`
+}
+
+function mapEvent(event: ApiEvent, model: ProbabilityModel): LegWithEdge[] {
+  const groupedMarkets = new Map<string, { book: ApiBook; market: ApiMarket }[]>()
+  for (const book of event.bookmakers ?? []) {
+    for (const market of book.markets) {
+      if (!MARKET_NAMES[market.key] || !market.outcomes.length) continue
+      const outcomeSet = market.outcomes.map(outcomeKey).sort().join(',')
+      const groupKey = `${market.key}|${outcomeSet}`
+      groupedMarkets.set(groupKey, [...(groupedMarkets.get(groupKey) ?? []), { book, market }])
+    }
+  }
 
   const legs: Leg[] = []
-  for (const market of bookmaker.markets ?? []) {
-    if (!Array.isArray(market.outcomes)) continue
-    const mappedMarket = MARKET_NAMES[market.key]
-    if (!mappedMarket) continue
-    const outcomes = market.outcomes.filter((outcome) => Number.isFinite(implied(outcome.price)))
-    const totalImplied = outcomes.reduce((sum, outcome) => sum + implied(outcome.price), 0)
-    if (!(totalImplied > 0)) continue
-
-    for (const outcome of outcomes) {
-      const noVig = implied(outcome.price) / totalImplied
-      if (!Number.isFinite(noVig)) continue
+  for (const marketBooks of groupedMarkets.values()) {
+    const { market: referenceMarket } = marketBooks[0]
+    const mappedMarket = MARKET_NAMES[referenceMarket.key]
+    const orderedOutcomes = [...referenceMarket.outcomes].sort((a, b) => outcomeKey(a).localeCompare(outcomeKey(b)))
+    const consensusBooks = marketBooks.map(({ book, market }) => ({
+      key: book.key,
+      title: book.title,
+      market: {
+        outcomes: orderedOutcomes.map((outcome) => ({
+          odds: market.outcomes.find((candidate) => outcomeKey(candidate) === outcomeKey(outcome))?.price ?? Number.NaN,
+        })),
+      },
+    }))
+    const consensus = consensusNoVig(consensusBooks, 'power')
+    const booksUsed = marketBooks.map(({ book }) => book.title)
+    for (let index = 0; index < orderedOutcomes.length; index += 1) {
+      const outcome = orderedOutcomes[index]
+      const available = marketBooks.flatMap(({ book, market }) => {
+        const price = market.outcomes.find((candidate) => outcomeKey(candidate) === outcomeKey(outcome))?.price
+        return typeof price === 'number' ? [{ book, price }] : []
+      })
+      const best = available.reduce((selected, entry) => (
+        americanToDecimal(entry.price) > americanToDecimal(selected.price) ? entry : selected
+      ), available[0])
+      const noVig = consensus[index]
+      if (!best || !Number.isFinite(noVig)) continue
       const selection = outcome.point === undefined ? outcome.name : `${outcome.name} ${outcome.point}`
       const base = {
         sport: event.sport_key,
         gameId: event.id,
         market: mappedMarket,
         selection,
-        americanOdds: outcome.price,
+        americanOdds: best.price,
+        bestPrice: best.price,
         noVigProbability: noVig,
-        bookKey: bookmaker.key,
+        bookKey: best.book.key,
       }
       const context: ProbabilityContext = { ...base, noVigProbability: noVig }
-      legs.push({
+      const leg: Leg = {
         id: `${event.id}:${mappedMarket}:${selection}`,
         ...base,
         teams: [event.home_team, event.away_team],
-        side: sideOf(outcome.price),
+        side: sideOf(best.price),
         modelProbability: estimate(model, { ...base, modelProbability: noVig }, context),
-      })
+        bookmarksUsed: booksUsed,
+      }
+      if (Number.isFinite(leg.modelProbability)) {
+        legs.push(leg)
+        saveSnapshot({ ...leg, bestPrice: best.price }, best.book.title)
+        trackPrediction(leg.id, leg.modelProbability)
+      }
     }
   }
-  return legs
+  return addEdgeInformation(legs)
 }
 
-function sampleLegs(model: ProbabilityModel): Leg[] {
-  return samplePicks.map((pick) => {
+function sampleLegs(model: ProbabilityModel): LegWithEdge[] {
+  const legs = samplePicks.map((pick): Leg => {
     const gameId = pick.title
     const market = pick.market.toLowerCase()
     const base = {
@@ -124,34 +168,42 @@ function sampleLegs(model: ProbabilityModel): Leg[] {
       market,
       selection: pick.side,
       americanOdds: pick.odds,
+      bestPrice: pick.odds,
     }
     const noVig = pick.fair > 0 ? pick.fair : implied(pick.odds)
     const withNoVig = { ...base, noVigProbability: noVig }
     const context: ProbabilityContext = { ...withNoVig, noVigProbability: noVig }
-    return {
+    const leg: Leg = {
       id: pick.id,
       ...withNoVig,
       teams: pick.title.split(/\s+vs\.?\s+/i).map((team) => team.trim()),
       side: sideOf(pick.odds),
       modelProbability: estimate(model, { ...withNoVig, modelProbability: noVig }, context),
+      bookmarksUsed: ['Sample data (not live)'],
     }
+    if (Number.isFinite(leg.modelProbability)) {
+      saveSnapshot(leg, 'Sample data (not live)')
+      trackPrediction(leg.id, leg.modelProbability)
+    }
+    return leg
   })
+  return addEdgeInformation(legs)
 }
 
 export async function fetchOddsAsLegs(
   date?: string,
   sports: Sport[] = DEFAULT_SPORTS,
   model: ProbabilityModel = new DefaultProbabilityModel(),
-): Promise<Leg[]> {
+): Promise<LegWithEdge[]> {
   const apiKey = import.meta.env.VITE_ODDS_API_KEY
   if (!apiKey) return sampleLegs(model)
 
   try {
-    const legs: Leg[] = []
+    const legs: LegWithEdge[] = []
     for (const sport of sports) {
       const params = new URLSearchParams({
         apiKey,
-        regions: 'us',
+        regions: 'us,us2,eu,uk,au',
         markets: 'h2h,spreads,totals',
         oddsFormat: 'american',
       })
