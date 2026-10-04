@@ -2,6 +2,8 @@ import { samplePicks } from '../mockData'
 import type { Leg, Sport } from './ticketBuilder'
 import { americanToDecimal } from './ticketBuilder'
 
+const sideOf = (americanOdds: number): 'favorite' | 'underdog' => (americanOdds >= 100 ? 'underdog' : 'favorite')
+
 export interface ProbabilityContext {
   sport: Sport
   gameId: string
@@ -93,6 +95,7 @@ function mapEvent(event: ApiEvent, model: ProbabilityModel): Leg[] {
         id: `${event.id}:${mappedMarket}:${selection}`,
         ...base,
         teams: [event.home_team, event.away_team],
+        side: sideOf(outcome.price),
         modelProbability: estimate(model, { ...base, modelProbability: noVig }, context),
       })
     }
@@ -117,6 +120,7 @@ function sampleLegs(model: ProbabilityModel): Leg[] {
       id: pick.id,
       ...base,
       teams: pick.title.split(/\s+vs\.?\s+/i).map((team) => team.trim()),
+      side: sideOf(pick.odds),
       modelProbability: estimate(model, { ...base, modelProbability: noVig }, context),
     }
   })

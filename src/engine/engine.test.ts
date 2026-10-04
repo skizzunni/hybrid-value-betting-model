@@ -33,7 +33,7 @@ describe('ticketBuilder', () => {
     expect(t.notes.join(' ')).toMatch(/Only 1 of 25/)
   })
   it('builds honest lottery and winnable tickets', () => {
-    const menu = generateDailyMenu(mk(60))
+    const menu = generateDailyMenu(mk(60), { mode: 'parlays' })
     expect(menu).toHaveLength(8)
     for (const t of menu) {
       expect(t.combinedProbability).toBeCloseTo(combinedProbabilityOfLegs(t.legs))
