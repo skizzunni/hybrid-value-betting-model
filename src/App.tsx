@@ -3,10 +3,12 @@ import {
   AlertTriangle,
   ArrowRight,
   BarChart3,
+  BellRing,
   BrainCircuit,
   CheckCircle2,
   Clock3,
   Database,
+  Gauge,
   Layers3,
   Shield,
   TrendingUp,
@@ -56,41 +58,75 @@ const liveTickets = [
   {
     type: 'Player prop',
     name: 'Jalen Brunson O 27.5 points',
+    market: 'NBA',
     edge: '+8.6%',
     confidence: 'High',
     size: '0.6u',
-    status: 'Live +EV'
+    status: 'Live +EV',
+    fair: '58.4%',
+    book: '51.2%'
   },
   {
     type: 'Side',
     name: 'Lakers +3.5',
+    market: 'NBA',
     edge: '+4.2%',
     confidence: 'Medium',
     size: '0.4u',
-    status: 'Monitor'
+    status: 'Monitor',
+    fair: '54.0%',
+    book: '48.7%'
   },
   {
     type: 'Parlay',
     name: '10-leg SGP build',
+    market: 'Multi-sport',
     edge: '+11.1%',
     confidence: 'Low',
     size: '0.2u',
-    status: 'Correlation check'
+    status: 'Correlation check',
+    fair: '14.8%',
+    book: '9.7%'
+  },
+  {
+    type: 'Total',
+    name: 'Over 218.5',
+    market: 'NBA',
+    edge: '+5.7%',
+    confidence: 'High',
+    size: '0.5u',
+    status: 'Live +EV',
+    fair: '53.8%',
+    book: '49.1%'
   }
 ]
 
 const lossMetrics = [
-  'Variance: outcome inside expected failure-rate band.',
-  'Model error: systematic bias beyond acceptable tolerance.',
-  'Information miss: injury, role, or news not captured in time.',
-  'Correlation miss: same-game or same-team legs failed jointly beyond forecast.'
+  { label: 'Variance', value: '41%', detail: 'Inside expected failure rate' },
+  { label: 'Model error', value: '23%', detail: 'Systematic bias' },
+  { label: 'Information miss', value: '26%', detail: 'Late news / injury' },
+  { label: 'Correlation miss', value: '10%', detail: 'Joint leg underestimation' }
 ]
 
 const decisionRules = [
   { label: '1–3 leg bets', value: '2–3% max risk' },
   { label: '7+ leg tickets', value: '1% max risk' },
   { label: 'Expected loss rate', value: 'Visible in every model' },
-  { label: 'Before every bet', value: 'Full log + uncertainty acknowledgment' }
+  { label: 'Pre-bet check', value: 'Full log + uncertainty acknowledgment' }
+]
+
+const heatmap = [
+  [0.82, 0.54, 0.48, 0.36],
+  [0.54, 0.91, 0.66, 0.42],
+  [0.48, 0.66, 0.88, 0.58],
+  [0.36, 0.42, 0.58, 0.73]
+]
+
+const signalFeed = [
+  'Beat report updated: Celtics injury risk elevated 11%',
+  'Weather alert: wind 18 mph reduces total model variance',
+  'Usage increase signal: Lambert projected 34 min vs earlier 28',
+  'Parlay books widened on Same-Game ticket pricing'
 ]
 
 export default function App() {
@@ -108,8 +144,8 @@ export default function App() {
 
           <nav className="nav">
             <a href="#system">System</a>
+            <a href="#board">Live board</a>
             <a href="#refresh">Refresh</a>
-            <a href="#tickets">Tickets</a>
             <a href="#losses">Loss loop</a>
           </nav>
 
@@ -204,6 +240,74 @@ export default function App() {
           </div>
         </section>
 
+        <section id="board" className="section-panel board-panel">
+          <div className="section-head split-head">
+            <div className="section-head inline-head">
+              <Gauge size={18} />
+              <h2>Live decision board</h2>
+            </div>
+            <div className="filter-row">
+              <span>All</span>
+              <span>Props</span>
+              <span>Totals</span>
+              <span>Parlays</span>
+            </div>
+          </div>
+
+          <div className="board-grid">
+            <div className="board-table-wrap">
+              <table className="board-table">
+                <thead>
+                  <tr>
+                    <th>Market</th>
+                    <th>Fair</th>
+                    <th>Book</th>
+                    <th>Edge</th>
+                    <th>Size</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {liveTickets.map((ticket) => (
+                    <tr key={ticket.name}>
+                      <td>
+                        <div className="market-cell">
+                          <div className="market-tag">{ticket.type}</div>
+                          <div>{ticket.name}</div>
+                        </div>
+                      </td>
+                      <td>{ticket.fair}</td>
+                      <td>{ticket.book}</td>
+                      <td className="edge-green">{ticket.edge}</td>
+                      <td>{ticket.size}</td>
+                      <td>
+                        <span className={ticket.status.includes('Live') ? 'live-pill' : ticket.status.includes('Monitor') ? 'warn-pill' : 'neutral-pill'}>
+                          {ticket.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="signal-box">
+              <div className="section-head small-gap">
+                <BellRing size={18} />
+                <h3>Signal feed</h3>
+              </div>
+              <div className="signal-list">
+                {signalFeed.map((item) => (
+                  <div key={item} className="signal-item">
+                    <span className="signal-dot" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="refresh" className="section-row">
           <div className="half-card">
             <div className="section-head small-gap">
@@ -256,53 +360,19 @@ export default function App() {
           </div>
         </section>
 
-        <section id="tickets" className="section-block">
-          <div className="section-head">
-            <Zap size={18} />
-            <h2>Live candidate board</h2>
-          </div>
-
-          <div className="ticket-list">
-            {liveTickets.map((ticket) => (
-              <div key={ticket.name} className="ticket-row">
-                <div className="ticket-main">
-                  <div className="ticket-type">{ticket.type}</div>
-                  <div className="ticket-name">{ticket.name}</div>
-                </div>
-                <div className="ticket-stat">
-                  <span>Edge</span>
-                  <strong>{ticket.edge}</strong>
-                </div>
-                <div className="ticket-stat">
-                  <span>Confidence</span>
-                  <strong>{ticket.confidence}</strong>
-                </div>
-                <div className="ticket-stat">
-                  <span>Size</span>
-                  <strong>{ticket.size}</strong>
-                </div>
-                <div className="ticket-state">
-                  <span className={ticket.status.includes('Live') ? 'live' : ticket.status.includes('Monitor') ? 'monitor' : 'warn'}>
-                    {ticket.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="losses" className="section-row lower-grid">
+        <section className="section-row lower-grid">
           <div className="half-card">
             <div className="section-head small-gap">
               <AlertTriangle size={18} />
               <h2>Loss integration loop</h2>
             </div>
 
-            <div className="bullet-list">
+            <div className="loss-grid">
               {lossMetrics.map((item) => (
-                <div key={item} className="bullet-row">
-                  <div className="bullet-mark"><Wallet size={14} /></div>
-                  <span>{item}</span>
+                <div key={item.label} className="loss-card">
+                  <div className="loss-label">{item.label}</div>
+                  <div className="loss-value">{item.value}</div>
+                  <div className="loss-detail">{item.detail}</div>
                 </div>
               ))}
             </div>
@@ -332,6 +402,38 @@ export default function App() {
                 <span>Execution discipline</span>
                 <strong>3-step log → edge check → stake allocation</strong>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section-panel correlation-panel">
+          <div className="section-head small-gap">
+            <Layers3 size={18} />
+            <h2>Correlation matrix</h2>
+          </div>
+
+          <div className="matrix-grid">
+            <div className="matrix-box">
+              {heatmap.map((row, rowIndex) => (
+                <div key={rowIndex} className="matrix-row">
+                  {row.map((cell, cellIndex) => (
+                    <div
+                      key={`${rowIndex}-${cellIndex}`}
+                      className="matrix-cell"
+                      style={{ opacity: 0.4 + cell * 0.8, background: `rgba(52, 211, 153, ${0.22 + cell * 0.7})` }}
+                    >
+                      {cell.toFixed(2)}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div className="matrix-note">
+              <div className="note-kicker">Joint probability model</div>
+              <p>
+                Same-game and same-team legs are never treated as independent. Correlation penalties are applied before ticket EV is accepted.
+              </p>
             </div>
           </div>
         </section>
