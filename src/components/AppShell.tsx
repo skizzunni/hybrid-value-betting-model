@@ -9,6 +9,7 @@ const LINKS = [
   { to: '/parlays', label: 'Parlays', end: false },
   { to: '/simulator', label: 'Simulator', end: false },
   { to: '/analytics', label: 'Analytics', end: false },
+  { to: '/postmortems', label: 'Post-mortems', end: false },
   { to: '/dashboard', label: 'Dashboard', end: false },
 ]
 

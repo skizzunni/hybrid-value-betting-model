@@ -8,6 +8,7 @@ import Analytics from './pages/Analytics'
 import Parlays from './pages/Parlays'
 import Tickets from './pages/Tickets'
 import NotFound from './pages/NotFound'
+import PostMortems from './pages/PostMortems'
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/parlays" element={<Parlays />} />
             <Route path="/tickets" element={<Tickets />} />
+            <Route path="/postmortems" element={<PostMortems />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppShell>

@@ -32,6 +32,8 @@ export interface Leg {
   side?: 'favorite' | 'underdog'
   /** Optional edge override; defaults to modelProbability - implied probability. */
   edge?: number
+  noVigProbability?: number
+  bookKey?: string
   bestPrice?: number
   impliedProb?: number
   isPositiveEdge?: boolean

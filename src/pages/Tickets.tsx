@@ -11,6 +11,8 @@ import { saveTicketResult } from '../engine/ledger'
 import { getCalibration, resolvePrediction } from '../engine/calibration'
 import { addEdgeInformation } from '../engine/edgeFilter'
 import { computeRealCLV, getOddsSnapshots, recordClosing } from '../engine/oddsSnapshots'
+import { fetchLatestScores, recordClosingOdds, recordLegOutcome, resolveLeg, settleTicket, type LegResult } from '../engine/postmortem/results'
+import { saveLegSnapshots } from '../engine/postmortem/snapshot'
 import { recommendStakeForTicket, tierForLeg } from '../engine/staking'
 import type { Leg, Ticket } from '../engine/ticketBuilder'
 import { classifyLeg, filterByEdgeOnly, isHighValue, legEdge, sideMixOf, topUnderdogValue, type Side } from '../engine/underdog'
@@ -84,48 +86,88 @@ const csvCell = (value: string | number) => {
   return `"${safe.replace(/"/g, '""')}"`
 }
 
-function LogResultForm({ ticket, suggestedStake, onDone, onCalibrationUpdate }: {
+function LogResultForm({ ticket, suggestedStake, dataSource, onDone, onCalibrationUpdate }: {
   ticket: Ticket
   suggestedStake: number
+  dataSource: 'live' | 'demo'
   onDone: () => void
   onCalibrationUpdate: () => void
 }) {
   const [stake, setStake] = useState(String(suggestedStake > 0 ? suggestedStake : 1))
-  const [hit, setHit] = useState(false)
   const [payout, setPayout] = useState('')
   const [closingOdds, setClosingOdds] = useState(() => ticket.legs.length === 1
     ? String(ticket.legs[0].bestPrice ?? ticket.legs[0].americanOdds)
     : '')
   const [saved, setSaved] = useState(false)
   const [side, setSide] = useState<Side>(ticket.legs.length === 1 ? classifyLeg(ticket.legs[0]) : 'neutral')
+  const [outcomes, setOutcomes] = useState<Record<string, LegResult>>({})
+  const [autoResolved, setAutoResolved] = useState<Set<string>>(new Set())
+  const [scoreStatus, setScoreStatus] = useState('')
+  const [fetchingScores, setFetchingScores] = useState(false)
+  const [snapshotTicketId] = useState(() => `${ticket.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   const id = `${ticket.id}-${ticket.tier}`
+
+  async function autoResolve() {
+    setFetchingScores(true)
+    setScoreStatus('')
+    const snapshots = saveLegSnapshots(ticket, dataSource, Date.now(), snapshotTicketId)
+    const result = await fetchLatestScores([...new Set(snapshots.map((snapshot) => snapshot.sport))])
+    if (result.error) setScoreStatus(result.error)
+    const byGame = new Map(result.scores.map((score) => [`${score.sport}:${score.gameId}`, score]))
+    const next: Record<string, LegResult> = {}
+    const resolved = new Set<string>()
+    for (const snapshot of snapshots) {
+      const score = byGame.get(`${snapshot.sport}:${snapshot.gameId}`)
+      if (!score) continue
+      const outcome = resolveLeg(snapshot, score)
+      next[snapshot.legId.slice(`${snapshotTicketId}:`.length)] = outcome
+      if (outcome !== 'unknown') resolved.add(snapshot.legId)
+    }
+    setOutcomes((previous) => ({ ...previous, ...next }))
+    setAutoResolved(resolved)
+    setScoreStatus(result.error ?? (resolved.size ? `Resolved ${resolved.size} of ${snapshots.length} legs from final scores.` : 'No matching completed game scores were found.'))
+    setFetchingScores(false)
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault()
     const stakeNum = Number(stake)
     if (!(stakeNum > 0)) return
-    const payoutNum = hit ? (payout === '' ? stakeNum * ticket.payoutDecimal : Number(payout)) : 0
+    const legResults = ticket.legs.map((leg) => outcomes[leg.id] ?? 'unknown')
+    if (legResults.some((outcome) => outcome === 'unknown')) return
+    const snapshots = saveLegSnapshots(ticket, dataSource, Date.now(), snapshotTicketId)
+    const settlement = settleTicket(snapshots, legResults, stakeNum)
+    const payoutNum = payout === '' ? settlement.payout : Number(payout)
     const single = ticket.legs.length === 1 ? ticket.legs[0] : undefined
     let clv: number | undefined
+    for (const snapshot of snapshots) {
+      const result = outcomes[snapshot.legId.slice(`${snapshotTicketId}:`.length)]
+      if (result === 'win' || result === 'loss' || result === 'push') {
+        recordLegOutcome(snapshot.legId, result, autoResolved.has(snapshot.legId) ? 'scores' : 'manual')
+        if (result !== 'push') resolvePrediction(snapshot.legId.slice(`${snapshotTicketId}:`.length), result === 'win')
+      }
+    }
     if (single) {
-      resolvePrediction(single.id, hit)
       const close = Number(closingOdds)
       if (closingOdds.trim() && Number.isFinite(close) && close !== 0) {
         const closing = recordClosing(single.id, close)
         const opening = getOddsSnapshots(single.id).find((snapshot) => snapshot.book !== 'Closing')
         if (opening) clv = computeRealCLV(opening, closing)
+        recordClosingOdds(`${snapshotTicketId}:${single.id}`, close)
       }
     }
-    saveTicketResult(ticket, stakeNum, hit, Number.isFinite(payoutNum) ? payoutNum : 0, clv, {
+    saveTicketResult(ticket, stakeNum, settlement.result === 'win', Number.isFinite(payoutNum) ? payoutNum : 0, clv, {
       side,
       legs: ticket.legs.map((leg) => ({
         side: single ? side : classifyLeg(leg),
         americanOdds: leg.americanOdds,
         modelProbability: leg.modelProbability,
-        ...(single ? { hit } : {}),
+        hit: outcomes[leg.id] === 'win',
       })),
-      legsHit: hit ? ticket.legs.length : undefined,
+      legsHit: settlement.legsHit,
       takenEdge: single ? legEdge(single) : undefined,
+      outcome: settlement.result === 'unknown' ? undefined : settlement.result,
+      snapshotTicketId,
     })
     onCalibrationUpdate()
     setSaved(true)
@@ -154,16 +196,38 @@ function LogResultForm({ ticket, suggestedStake, onDone, onCalibrationUpdate }: 
           <option value="neutral">Neutral</option>
         </select>
       </label>
-      <label className="field" htmlFor={`${id}-outcome`}>
-        Outcome
-        <select id={`${id}-outcome`} className="input" value={hit ? 'hit' : 'miss'} onChange={(e) => setHit(e.target.value === 'hit')}>
-          <option value="miss">Miss</option>
-          <option value="hit">Hit</option>
-        </select>
-      </label>
-      {hit && (
+      <button type="button" className="btn btn-sm" disabled={fetchingScores} onClick={() => void autoResolve()}>
+        {fetchingScores ? 'Checking scores…' : 'Auto-resolve from scores'}
+      </button>
+      {scoreStatus && <div role="status" className="leg-sub">{scoreStatus}</div>}
+      <div className="stack-sm">
+        {ticket.legs.map((leg) => (
+          <label className="field" key={leg.id} htmlFor={`${id}-outcome-${leg.id}`}>
+            {leg.selection} outcome
+            <select
+              id={`${id}-outcome-${leg.id}`}
+              className="input"
+              value={outcomes[leg.id] ?? 'unknown'}
+              onChange={(event) => {
+                setOutcomes((current) => ({ ...current, [leg.id]: event.target.value as LegResult }))
+                setAutoResolved((current) => {
+                  const next = new Set(current)
+                  next.delete(`${snapshotTicketId}:${leg.id}`)
+                  return next
+                })
+              }}
+            >
+              <option value="unknown">Unknown — choose result</option>
+              <option value="win">Win</option>
+              <option value="loss">Loss</option>
+              <option value="push">Push</option>
+            </select>
+          </label>
+        ))}
+      </div>
+      {!ticket.legs.some((leg) => outcomes[leg.id] === 'loss' || outcomes[leg.id] === 'unknown') && (
         <label className="field" htmlFor={`${id}-payout`}>
-          Total return ($, blank = stake × odds)
+          Total return ($, blank = push-adjusted odds)
           <input id={`${id}-payout`} className="input" type="number" min="0" step="0.01" value={payout} onChange={(e) => setPayout(e.target.value)} />
         </label>
       )}
@@ -175,7 +239,7 @@ function LogResultForm({ ticket, suggestedStake, onDone, onCalibrationUpdate }: 
       )}
       {ticket.legs.length > 1 && <p className="leg-sub">Closing odds and calibration are recorded for individual straight bets, not inferred from a parlay result.</p>}
       <div className="row">
-        <button type="submit" className="btn btn-primary btn-sm">Save result</button>
+        <button type="submit" className="btn btn-primary btn-sm" disabled={ticket.legs.some((leg) => !outcomes[leg.id] || outcomes[leg.id] === 'unknown')}>Save result</button>
         <button type="button" className="btn btn-sm" onClick={onDone}>Cancel</button>
       </div>
     </form>
@@ -203,7 +267,7 @@ const legColumns: Column<Leg>[] = [
   } },
 ]
 
-function TicketCard({ ticket, bankroll, onCalibrationUpdate }: { ticket: Ticket; bankroll: number; onCalibrationUpdate: () => void }) {
+function TicketCard({ ticket, bankroll, dataSource, onCalibrationUpdate }: { ticket: Ticket; bankroll: number; dataSource: 'live' | 'demo'; onCalibrationUpdate: () => void }) {
   const [open, setOpen] = useState(false)
   const [logging, setLogging] = useState(false)
   const stake = recommendStakeForTicket(ticket, bankroll)
@@ -263,7 +327,7 @@ function TicketCard({ ticket, bankroll, onCalibrationUpdate }: { ticket: Ticket;
         </div>
 
         {logging ? (
-          <LogResultForm ticket={ticket} suggestedStake={stake.dollarStake} onDone={() => setLogging(false)} onCalibrationUpdate={onCalibrationUpdate} />
+          <LogResultForm ticket={ticket} suggestedStake={stake.dollarStake} dataSource={dataSource} onDone={() => setLogging(false)} onCalibrationUpdate={onCalibrationUpdate} />
         ) : (
           <button type="button" className="btn btn-sm" style={{ marginTop: 'var(--sp-3)' }} onClick={() => setLogging(true)} disabled={ticket.legs.length === 0}>
             Log result
@@ -419,6 +483,7 @@ export default function TicketsPage() {
           </>
         }
       />
+      {slate.learningEnabled && <p className="notice" role="status">Evidence-supported probability adjustments are enabled; displayed ticket probabilities reflect the current learned factors.</p>}
       <Disclaimer compact />
 
       {slate.status === 'loading' && <SkeletonCards count={4} />}
@@ -502,6 +567,7 @@ export default function TicketsPage() {
                   key={loggingLeg.id}
                   ticket={straightTicketOf(loggingLeg)}
                   suggestedStake={recommendStakeForTicket({ tier: 'straight', legs: [loggingLeg], combinedProbability: loggingLeg.modelProbability }, bankroll).dollarStake}
+                  dataSource={slate.source}
                   onDone={() => setLoggingLeg(null)}
                   onCalibrationUpdate={updateCalibration}
                 />
@@ -529,7 +595,7 @@ export default function TicketsPage() {
                 <EmptyState title={`No ${group.tier} tickets`} description="Nothing matches the current filters." />
               ) : (
                 <div className="grid-cards">
-                  {group.items.map((t) => <TicketCard key={t.id + t.tier} ticket={t} bankroll={bankroll} onCalibrationUpdate={updateCalibration} />)}
+                  {group.items.map((t) => <TicketCard key={t.id + t.tier} ticket={t} bankroll={bankroll} dataSource={slate.source} onCalibrationUpdate={updateCalibration} />)}
                 </div>
               )}
             </section>

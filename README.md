@@ -120,6 +120,16 @@ The UI uses repository sample picks without an API key (or if a request fails),
 clearly marking sample data and never treating market consensus as an independent
 model edge.
 
+## Loss post-mortems and learning
+
+When a result is logged, the browser stores one pick-time snapshot per ticket leg in versioned local storage. A snapshot captures the leg's odds, model/no-vig probabilities when available, edge, market, sport, side, ticket tier, strategy, data source and correlation group. Reusing the same pick on another ticket creates a separate record. Snapshots and outcomes stay in this browser; malformed or unavailable storage does not crash the engine.
+
+The Post-mortems page can fetch completed scores from The Odds API scores endpoint using `VITE_ODDS_API_KEY`. Moneyline, spread and total outcomes are resolved from scores; users can also enter each leg's result manually when scores are unavailable. Pushes are retained as pushes and are removed from parlay odds when calculating the default return. Closing odds can be entered manually to calculate CLV. Missing scores, closing odds or pick-time evidence remain unknown; they are never filled with guessed causes.
+
+Loss classification uses measured evidence only: pick-time edge, recorded CLV, measured line movement, resolved calibration history, shared-game losses and parlay probabilities. It cannot identify player, lineup or injury causes without a real data feed. Implement the `ContextProvider` interface in `src/engine/postmortem/context.ts` to attach sourced context notes to snapshots later; `noOpContextProvider` is the default and returns no notes.
+
+Segments report sample count, predicted and observed hit rates, Brier score, ROI, CLV when known and Wilson confidence intervals. A leak requires at least 50 resolved bets by default and statistically significant underperformance. The optional probability adjustment is off by default; it uses empirical-Bayes shrinkage, is limited to a five percentage-point shift, and writes an evidence-backed change log that can be exported or reset. Single losses rarely mean the model was wrong. We only adjust on aggregated evidence. This system cannot guarantee winning.
+
 ## Deploying on Render (SPA routing)
 
 `render.yaml` declares a rewrite (`/*` -> `/index.html`) so that refreshing client-side routes such as `/tickets` works. If the service was created manually in the Render dashboard (not from the blueprint), `render.yaml` is ignored: add the rewrite under **Redirects/Rewrites** (Source `/*`, Destination `/index.html`, Action `Rewrite`).

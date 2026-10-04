@@ -17,7 +17,7 @@ const columns: Column<LedgerEntry>[] = [
   { key: 'legs', header: 'Legs', align: 'right', render: (e) => e.legCount },
   { key: 'p', header: 'Model prob', align: 'right', render: (e) => (typeof e.combinedProbability === 'number' ? probability(e.combinedProbability) : '—') },
   { key: 'stake', header: 'Stake', align: 'right', render: (e) => currency(e.stake) },
-  { key: 'result', header: 'Result', render: (e) => <span className={e.hit ? 'tone-positive' : 'tone-negative'}>{e.hit ? 'Hit' : 'Miss'}</span> },
+  { key: 'result', header: 'Result', render: (e) => <span className={e.outcome === 'push' ? '' : (e.outcome === 'win' || (!e.outcome && e.hit)) ? 'tone-positive' : 'tone-negative'}>{e.outcome ?? (e.hit ? 'win' : 'loss')}</span> },
   { key: 'pl', header: 'P/L', align: 'right', render: (e) => <span className={e.payout - e.stake >= 0 ? 'tone-positive' : 'tone-negative'}>{signedCurrency(e.payout - e.stake)}</span> },
   { key: 'clv', header: 'CLV', align: 'right', render: (e) => (typeof e.clv === 'number' ? signedPercent(e.clv, 2) : '—') },
 ]
