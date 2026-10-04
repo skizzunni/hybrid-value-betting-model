@@ -17,19 +17,12 @@ export type PickItem = {
   label: string
 }
 
-export type Parlay = {
+export type DashboardPickGroup = {
   id: string
   label: string
-  legs: PickItem[]
-  probability: number
-  payoutMultiplier: number
-  expectedValue?: number
+  note: string
+  items: PickItem[]
 }
-
-export const samplePicks: PickItem[] = [...]
-export const pickGroups = getPickGroups()
-export function generateLocalParlays(...args: any[]): Parlay[] { ... }
-export function runLocalSimulation(...args: any[]): SimulationResult { ... }
 
 export type Parlay = {
   id: string
@@ -52,7 +45,7 @@ export type SimulationResult = {
 }
 
 function product(nums: number[]): number {
-  return nums.reduce((acc: number, n: number) => acc * n, 1)
+  return nums.reduce((acc, n) => acc * n, 1)
 }
 
 function probabilityToPayoutMultiplier(p: number, vig = 0.95): number {
@@ -86,7 +79,7 @@ function normalizePick(item: Partial<PickItem> | null | undefined): PickItem {
 }
 
 export function generateLocalParlays(
-  sourceOrCount: number | PickItem[] | { items?: PickItem[]; maxLegs?: number; topN?: number } | undefined,
+  sourceOrCount?: number | PickItem[] | { items?: PickItem[]; maxLegs?: number; topN?: number },
   maybeMaxLegs?: number,
   maybeTopN?: number
 ): Parlay[] {
@@ -116,7 +109,7 @@ export function generateLocalParlays(
           const legs = [picks[i], picks[j]]
           const prob = Math.max(
             0.000001,
-            product(legs.map((leg: PickItem) => Math.min(0.9999, Math.max(0.0001, leg.fair))))
+            product(legs.map((leg) => Math.min(0.9999, Math.max(0.0001, leg.fair))))
           )
           const payout = probabilityToPayoutMultiplier(prob)
           parlays.push({
@@ -131,7 +124,7 @@ export function generateLocalParlays(
       }
     }
 
-    return parlays.sort((a: Parlay, b: Parlay) => b.probability - a.probability)
+    return parlays.sort((a, b) => b.probability - a.probability)
   }
 
   const items: PickItem[] = Array.isArray(sourceOrCount)
@@ -144,8 +137,8 @@ export function generateLocalParlays(
   const topN = typeof maybeTopN === 'number' ? maybeTopN : 20
 
   const picks = items
-    .map((item: PickItem) => normalizePick(item))
-    .sort((a: PickItem, b: PickItem) => b.fair - a.fair)
+    .map((item) => normalizePick(item))
+    .sort((a, b) => b.fair - a.fair)
     .slice(0, topN)
 
   const parlays: Parlay[] = []
@@ -170,7 +163,7 @@ export function generateLocalParlays(
         const legs = [picks[i], picks[j]]
         const prob = Math.max(
           0.000001,
-          product(legs.map((leg: PickItem) => Math.min(0.9999, Math.max(0.0001, leg.fair))))
+          product(legs.map((leg) => Math.min(0.9999, Math.max(0.0001, leg.fair))))
         )
         const payout = probabilityToPayoutMultiplier(prob)
         parlays.push({
@@ -185,11 +178,11 @@ export function generateLocalParlays(
     }
   }
 
-  return parlays.sort((a: Parlay, b: Parlay) => b.probability - a.probability)
+  return parlays.sort((a, b) => b.probability - a.probability)
 }
 
 export function runLocalSimulation(
-  source: number | PickItem[] | undefined,
+  source?: number | PickItem[],
   arg2?: number | { trials?: number; stakePerBet?: number },
   arg3?: number
 ): SimulationResult {
@@ -351,9 +344,9 @@ export function getPickGroups(): DashboardPickGroup[] {
   ]
 }
 
-export const pickGroups: DashboardPickGroup[] = getPickGroups()
+export const pickGroups = getPickGroups()
 
-export function buildDashboard(): { groups: DashboardPickGroup[]; title: string; generatedAt: string } {
+export function buildDashboard() {
   return {
     groups: getPickGroups(),
     title: 'Dashboard',
@@ -361,22 +354,22 @@ export function buildDashboard(): { groups: DashboardPickGroup[]; title: string;
   }
 }
 
-export function buildDashboardData(): ReturnType<typeof buildDashboard> {
+export function buildDashboardData() {
   return buildDashboard()
 }
 
-export function pickGrid(): DashboardPickGroup[] {
+export function pickGrid() {
   return getPickGroups()
 }
 
-export function buildCsv(rows: Array<Record<string, unknown>> = []): string {
+export function buildCsv(rows: Array<Record<string, unknown>> = []) {
   if (!rows.length) return ''
   const headers = Object.keys(rows[0] as Record<string, unknown>)
-  const csvLines: string[] = [
+  const csvLines = [
     headers.join(','),
-    ...rows.map((row: Record<string, unknown>) =>
+    ...rows.map((row) =>
       headers
-        .map((header: string) => {
+        .map((header) => {
           const value = row[header]
           return typeof value === 'string'
             ? `"${value.replace(/"/g, '""')}"`
@@ -388,7 +381,7 @@ export function buildCsv(rows: Array<Record<string, unknown>> = []): string {
   return csvLines.join('\n')
 }
 
-export function buildDashboardCsv(rows: Array<Record<string, unknown>> = []): string {
+export function buildDashboardCsv(rows: Array<Record<string, unknown>> = []) {
   return buildCsv(rows)
 }
 
