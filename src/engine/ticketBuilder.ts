@@ -9,10 +9,11 @@
  *    different selections on the same head-to-head/spread market conflict, and
  *    Over/Under selections on the same totals market conflict.
  *
- * Honesty: combinedProbability is always the real product of leg probabilities.
- * A 25-leg "lottery" ticket is never labelled as a 5-18% ticket; short tickets
- * carry explanatory notes.
+ * Honesty: only positive-edge legs are eligible, and probabilities are adjusted
+ * for explicitly supplied same-game correlations. Short tickets carry notes.
  */
+import { adjustedCombinedProb, type CorrelationMatrix } from './correlation'
+import { filterByEdge, type LegWithEdge } from './edgeFilter'
 
 export type Sport = string
 
@@ -27,6 +28,10 @@ export interface Leg {
   modelProbability: number
   /** Optional edge override; defaults to modelProbability - implied probability. */
   edge?: number
+  bestPrice?: number
+  impliedProb?: number
+  isPositiveEdge?: boolean
+  bookmarksUsed?: string[]
 }
 
 export type TicketStrategy = 'highestProbability' | 'highestPayout' | 'sameGameHeavy' | 'mixed'
@@ -37,10 +42,11 @@ export interface Ticket {
   name: string
   strategy: TicketStrategy
   tier: TicketTier
-  legs: Leg[]
+  legs: LegWithEdge[]
   targetLegs: number
   combinedProbability: number
   payoutDecimal: number
+  edgeQuality: 'strong' | 'medium' | 'weak' | 'breakeven' | 'negative'
   notes: string[]
 }
 
@@ -62,6 +68,8 @@ export interface DailyMenuOptions {
   winnableMaxK?: number
   winnableMinProbability?: number
   winnableMaxProbability?: number
+  edgeThreshold?: number
+  gameCorrelations?: CorrelationMatrix
   specs?: TicketSpec[]
 }
 
@@ -100,7 +108,7 @@ export function combinedProbabilityOfLegs(legs: Leg[]): number {
 }
 
 export function payoutDecimalOfLegs(legs: Leg[]): number {
-  return legs.reduce((acc, l) => acc * safeDecimal(l.americanOdds), 1)
+  return legs.reduce((acc, l) => acc * safeDecimal(l.bestPrice ?? l.americanOdds), 1)
 }
 
 function legEdge(leg: Leg): number {
@@ -148,13 +156,13 @@ const byComposite = (a: Leg, b: Leg): number =>
 const byPayout = (a: Leg, b: Leg): number =>
   safeDecimal(b.americanOdds) - safeDecimal(a.americanOdds) || byComposite(a, b)
 
-function rank(pool: Leg[], spec: TicketSpec): Leg[] {
+function rank(pool: LegWithEdge[], spec: TicketSpec): LegWithEdge[] {
   switch (spec.strategy) {
     case 'highestPayout':
       return [...pool].sort(byPayout)
     case 'sameGameHeavy': {
       if (!spec.preferCorrelation) return [...pool].sort(byComposite)
-      const groups = new Map<string, Leg[]>()
+      const groups = new Map<string, LegWithEdge[]>()
       for (const l of pool) groups.set(l.gameId, [...(groups.get(l.gameId) ?? []), l])
       const ordered = [...groups.values()].map((g) => g.sort(byComposite))
       ordered.sort(
@@ -166,7 +174,7 @@ function rank(pool: Leg[], spec: TicketSpec): Leg[] {
       const p = [...pool].sort(byComposite)
       const q = [...pool].sort(byPayout)
       const seen = new Set<string>()
-      const out: Leg[] = []
+      const out: LegWithEdge[] = []
       for (let i = 0; i < p.length; i += 1) {
         for (const l of [p[i], q[i]]) {
           if (!seen.has(l.id)) {
@@ -182,7 +190,7 @@ function rank(pool: Leg[], spec: TicketSpec): Leg[] {
   }
 }
 
-function eligible(candidates: Leg[], o: typeof DEFAULTS): Leg[] {
+function eligible(candidates: Leg[], o: typeof DEFAULTS, edgeThreshold = 0): LegWithEdge[] {
   const seen = new Set<string>()
   const ok = candidates.filter((l) => {
     if (seen.has(l.id)) return false
@@ -195,11 +203,11 @@ function eligible(candidates: Leg[], o: typeof DEFAULTS): Leg[] {
     )
   })
   // limit pool for performance, keeping the best by composite score
-  return ok.sort(byComposite).slice(0, o.maxCandidatesToConsider)
+  return filterByEdge(ok.sort(byComposite).slice(0, o.maxCandidatesToConsider), edgeThreshold)
 }
 
-function assemble(ranked: Leg[], k: number, o: typeof DEFAULTS): Leg[] {
-  const chosen: Leg[] = []
+function assemble(ranked: LegWithEdge[], k: number, o: typeof DEFAULTS): LegWithEdge[] {
+  const chosen: LegWithEdge[] = []
   for (const leg of ranked) {
     if (chosen.length >= k) break
     if (canAdd(chosen, leg, o.maxPerGame, o.maxPerTeam)) chosen.push(leg)
@@ -216,7 +224,26 @@ function resolve(options?: DailyMenuOptions): typeof DEFAULTS {
   return o
 }
 
-function makeTicket(spec: TicketSpec, tier: TicketTier, legs: Leg[], target: number, notes: string[]): Ticket {
+function makeTicket(
+  spec: TicketSpec,
+  tier: TicketTier,
+  legs: LegWithEdge[],
+  target: number,
+  notes: string[],
+  gameCorrelations?: CorrelationMatrix,
+): Ticket {
+  const averageEdge = legs.length
+    ? legs.reduce((sum, leg) => sum + leg.edge, 0) / legs.length
+    : Number.NEGATIVE_INFINITY
+  const edgeQuality = averageEdge >= 0.05
+    ? 'strong'
+    : averageEdge >= 0.02
+      ? 'medium'
+      : averageEdge > 0
+        ? 'weak'
+        : averageEdge === 0
+          ? 'breakeven'
+          : 'negative'
   return {
     id: `${spec.id}-${tier}`,
     name: `${spec.name} (${tier})`,
@@ -224,8 +251,9 @@ function makeTicket(spec: TicketSpec, tier: TicketTier, legs: Leg[], target: num
     tier,
     legs,
     targetLegs: target,
-    combinedProbability: combinedProbabilityOfLegs(legs),
+    combinedProbability: adjustedCombinedProb(legs, gameCorrelations),
     payoutDecimal: payoutDecimalOfLegs(legs),
+    edgeQuality,
     notes,
   }
 }
@@ -234,39 +262,43 @@ function makeTicket(spec: TicketSpec, tier: TicketTier, legs: Leg[], target: num
 export function buildTicketFromSpec(candidates: Leg[], spec: TicketSpec, options?: DailyMenuOptions): Ticket {
   const o = resolve(options)
   const target = spec.targetLegs ?? o.lotteryLegs
-  const legs = assemble(rank(eligible(candidates, o), spec), target, o)
+  const legs = assemble(rank(eligible(candidates, o, options?.edgeThreshold), spec), target, o)
   const notes: string[] = []
+  if (legs.length === 0) notes.push('No value found: no candidates clear the positive-edge filter.')
   if (legs.length < target) {
     notes.push(`Only ${legs.length} of ${target} target legs available under constraints.`)
   }
-  notes.push('Lottery ticket: combined probability is the true product of leg probabilities.')
-  return makeTicket(spec, 'lottery', legs, target, notes)
+  notes.push('Indicative payout multiplies listed leg prices; correlated sportsbook parlay pricing may differ.')
+  notes.push('Lottery ticket is entertainment; its combined probability is not a probability of profit.')
+  return makeTicket(spec, 'lottery', legs, target, notes, options?.gameCorrelations)
 }
 
 /** Winnable ticket: smallest k in [3,12] whose combined probability falls in 5%..18%. */
 export function buildWinnableTicket(candidates: Leg[], spec: TicketSpec, options?: DailyMenuOptions): Ticket {
   const o = resolve(options)
-  const ranked = rank(eligible(candidates, o), spec)
+  const ranked = rank(eligible(candidates, o, options?.edgeThreshold), spec)
   const inBand = (p: number) => p >= o.winnableMinProbability && p <= o.winnableMaxProbability
-  let best: { legs: Leg[]; dist: number; k: number } | undefined
+  let best: { legs: LegWithEdge[]; dist: number; k: number } | undefined
   for (let k = o.winnableMinK; k <= o.winnableMaxK; k += 1) {
     const legs = assemble(ranked, k, o)
     if (legs.length === 0) break
-    const p = combinedProbabilityOfLegs(legs)
+    const p = adjustedCombinedProb(legs, options?.gameCorrelations)
     if (legs.length === k && inBand(p)) {
       return makeTicket(spec, 'winnable', legs, k, [
         `Smallest leg count (${k}) reaching ${(o.winnableMinProbability * 100).toFixed(0)}%-${(o.winnableMaxProbability * 100).toFixed(0)}% combined probability.`,
-      ])
+        'Indicative payout multiplies listed leg prices; correlated sportsbook parlay pricing may differ.',
+      ], options?.gameCorrelations)
     }
     const dist = p < o.winnableMinProbability ? Math.log(o.winnableMinProbability / p) : p > o.winnableMaxProbability ? Math.log(p / o.winnableMaxProbability) : 0
     if (!best || dist < best.dist) best = { legs, dist, k }
     if (legs.length < k) break
   }
-  const legs = best?.legs ?? []
-  const notes = [
+  const legs: LegWithEdge[] = best?.legs ?? []
+  const notes = legs.length ? [
     `No ticket with ${o.winnableMinK}-${o.winnableMaxK} legs reached the ${(o.winnableMinProbability * 100).toFixed(0)}%-${(o.winnableMaxProbability * 100).toFixed(0)}% band; best available (${legs.length} legs) returned.`,
-  ]
-  return makeTicket(spec, 'winnable', legs, best?.k ?? o.winnableMinK, notes)
+    'Indicative payout multiplies listed leg prices; correlated sportsbook parlay pricing may differ.',
+  ] : ['No value found: no positive-edge candidates are available.']
+  return makeTicket(spec, 'winnable', legs, best?.k ?? o.winnableMinK, notes, options?.gameCorrelations)
 }
 
 /** One lottery and one winnable ticket per spec. */
@@ -282,7 +314,8 @@ export function formatTicketReport(ticket: Ticket): string {
     `Payout (decimal): ${ticket.payoutDecimal.toFixed(2)}x`,
   ]
   ticket.legs.forEach((l, i) => {
-    const odds = l.americanOdds > 0 ? `+${l.americanOdds}` : `${l.americanOdds}`
+    const price = l.bestPrice
+    const odds = price > 0 ? `+${price}` : `${price}`
     lines.push(`${i + 1}. ${l.teams.join(' vs ')} | ${l.market} | ${l.selection} (${odds}) p=${(l.modelProbability * 100).toFixed(1)}%`)
   })
   ticket.notes.forEach((n) => lines.push(`Note: ${n}`))

@@ -1,4 +1,3 @@
-import React from 'react'
 import { pickGroups, buildCsv } from '../mockData'
 
 export default function Dashboard() {
