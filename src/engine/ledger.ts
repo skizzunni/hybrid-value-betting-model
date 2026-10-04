@@ -27,6 +27,8 @@ export type LedgerEntry = {
   legsHit?: number
   takenEdge?: number
   closingEdge?: number
+  outcome?: 'win' | 'loss' | 'push'
+  snapshotTicketId?: string
 }
 
 export type SideStats = { count: number; hits: number; roi: number }
@@ -97,7 +99,7 @@ export function saveTicketResult(
   hit: boolean,
   payout: number,
   clv?: number,
-  extra?: Pick<LedgerEntry, 'side' | 'legs' | 'legsHit' | 'takenEdge' | 'closingEdge'>,
+  extra?: Pick<LedgerEntry, 'side' | 'legs' | 'legsHit' | 'takenEdge' | 'closingEdge' | 'outcome' | 'snapshotTicketId'>,
 ): LedgerEntry {
   const now = Date.now()
   const ticketId = ticket.id
@@ -150,16 +152,18 @@ function sideStats(entries: LedgerEntry[]): SideStats {
 
 export function getLedgerSummary(ledger: LedgerEntry[] = loadLedger()): LedgerSummary {
   const entries = ledger
-  const hits = entries.filter((entry) => entry.hit).length
+  const hits = entries.filter((entry) => entry.outcome ? entry.outcome === 'win' : entry.hit).length
+  const losses = entries.filter((entry) => entry.outcome ? entry.outcome === 'loss' : !entry.hit).length
+  const resolved = entries.filter((entry) => entry.outcome !== 'push')
   const clvs = finite(entries.map((entry) => entry.clv))
   const averageCLV = clvs.length ? mean(clvs) : undefined
 
   return {
     totalTickets: entries.length,
     hits,
-    losses: entries.length - hits,
+    losses,
     roi: roiOf(entries),
-    hitRate: entries.length > 0 ? hits / entries.length : 0,
+    hitRate: resolved.length > 0 ? hits / resolved.length : 0,
     averageCLV,
     avgCLV: averageCLV ?? 0,
     favoriteStats: sideStats(entries.filter((e) => entrySide(e) === 'favorite')),
@@ -173,10 +177,11 @@ function entryProbability(entry: LedgerEntry): number | undefined {
 }
 
 function analyticsFor(entries: LedgerEntry[]): AnalyticsSide {
+  const resolved = entries.filter((entry) => entry.outcome !== 'push')
   return {
     count: entries.length,
     roi: roiOf(entries),
-    hitRate: entries.length ? entries.filter((e) => e.hit).length / entries.length : 0,
+    hitRate: resolved.length ? resolved.filter((entry) => entry.outcome === 'win' || (!entry.outcome && entry.hit)).length / resolved.length : 0,
     avgCLV: mean(finite(entries.map((e) => e.clv))),
     edgeVsClosing: mean(finite(entries.map((e) => e.closingEdge))),
     avgOdds: mean(finite(entries.map((e) => e.legs?.length === 1 ? e.legs[0].americanOdds : undefined))),
@@ -205,7 +210,7 @@ export function getSideCalibration(ledger: LedgerEntry[] = loadLedger()): { favo
     const buckets = new Map<number, LedgerEntry[]>()
     for (const entry of ledger) {
       const p = entryProbability(entry)
-      if (entrySide(entry) !== side || typeof p !== 'number' || !Number.isFinite(p)) continue
+      if (entry.outcome === 'push' || entrySide(entry) !== side || typeof p !== 'number' || !Number.isFinite(p)) continue
       const key = Math.min(9, Math.max(0, Math.floor(p * 10)))
       buckets.set(key, [...(buckets.get(key) ?? []), entry])
     }
@@ -228,4 +233,23 @@ export function clearLedger(): void {
   } catch {
     return
   }
+}
+
+export function updateTicketSettlement(
+  snapshotTicketId: string,
+  outcome: 'win' | 'loss' | 'push',
+  payout: number,
+  legsHit: number,
+): LedgerEntry | undefined {
+  if (!Number.isFinite(payout) || payout < 0 || !Number.isFinite(legsHit) || legsHit < 0) return undefined
+  const ledger = loadLedger()
+  const index = ledger.findIndex((entry) => entry.snapshotTicketId === snapshotTicketId)
+  if (index < 0) return undefined
+  ledger[index] = { ...ledger[index], outcome, hit: outcome === 'win', payout, legsHit }
+  try {
+    getStorage()?.setItem(STORAGE_KEY, JSON.stringify(ledger))
+  } catch {
+    return undefined
+  }
+  return ledger[index]
 }

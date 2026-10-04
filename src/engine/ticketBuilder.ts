@@ -31,6 +31,8 @@ export interface Leg {
   side?: 'favorite' | 'underdog'
   /** Optional edge override; defaults to modelProbability - implied probability. */
   edge?: number
+  noVigProbability?: number
+  bookKey?: string
 }
 
 export type TicketStrategy = 'highestProbability' | 'highestPayout' | 'sameGameHeavy' | 'mixed'

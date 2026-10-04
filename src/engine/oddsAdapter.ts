@@ -98,6 +98,8 @@ function mapEvent(event: ApiEvent, model: ProbabilityModel): Leg[] {
         market: mappedMarket,
         selection,
         americanOdds: outcome.price,
+        noVigProbability: noVig,
+        bookKey: bookmaker.key,
       }
       const context: ProbabilityContext = { ...base, noVigProbability: noVig }
       legs.push({
@@ -124,13 +126,14 @@ function sampleLegs(model: ProbabilityModel): Leg[] {
       americanOdds: pick.odds,
     }
     const noVig = pick.fair > 0 ? pick.fair : implied(pick.odds)
-    const context: ProbabilityContext = { ...base, noVigProbability: noVig }
+    const withNoVig = { ...base, noVigProbability: noVig }
+    const context: ProbabilityContext = { ...withNoVig, noVigProbability: noVig }
     return {
       id: pick.id,
-      ...base,
+      ...withNoVig,
       teams: pick.title.split(/\s+vs\.?\s+/i).map((team) => team.trim()),
       side: sideOf(pick.odds),
-      modelProbability: estimate(model, { ...base, modelProbability: noVig }, context),
+      modelProbability: estimate(model, { ...withNoVig, modelProbability: noVig }, context),
     }
   })
 }
