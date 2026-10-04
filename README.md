@@ -1,40 +1,32 @@
 # Hybrid Value Betting System
 
-A live website concept and product mock for an integrated hybrid value-betting model that combines:
+## Full stack app
 
-- sides
-- totals
-- player props
-- multi-leg tickets up to 10+ legs
-- live refresh loop every 15 minutes
-- probability-first modeling
-- uncertainty-aware sizing
-- correlation-adjusted parlay EV
-- continuous learning from every loss
+This repo includes:
+- React + Vite front-end multi-page app
+- Express backend with simulation endpoints
+- live dashboard concept UI
+- analytics and simulation modules
 
-## Run locally
+## Run frontend
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Build for production
+## Run backend
 
 ```bash
-npm run build
+cd server
+npm install
+npm run dev
 ```
 
-## Project purpose
+## Endpoints
 
-This project visualizes a full operational betting system as a single, integrated product:
-
-- probability distributions instead of certainty claims
-- updates from odds, injuries, weather, and role fluctuations
-- risk caps and position sizing by edge and confidence
-- multi-leg ticket math with correlation assumptions
-- loss feedback and calibration loop
-
-## Notes
-
-This is a front-end marketing/product mock for the system described in the earlier model spec. It is intended as a prototype site and product story, not a real sportsbook execution engine.
+- GET /api/health
+- GET /api/tickets
+- GET /api/metrics
+- POST /api/simulate
+- POST /api/tickets/:name/resolve

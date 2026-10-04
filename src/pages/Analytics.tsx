@@ -1,21 +1,42 @@
 import React, { useEffect, useState } from 'react'
 
-export default function Analytics(){
+export default function Analytics() {
   const [metrics, setMetrics] = useState<any>(null)
 
-  useEffect(()=>{
-    fetch('/api/metrics').then(r=>r.json()).then(setMetrics).catch(()=>{})
-  },[])
+  useEffect(() => {
+    fetch('/api/metrics').then((r) => r.json()).then(setMetrics)
+  }, [])
 
   return (
-    <div className="container" style={{padding:40}}>
-      <h1>Analytics</h1>
-      <p style={{color:'#94a3b8'}}>Backend-powered metrics and simple analytics.</p>
+    <div className="container page-space">
+      <section className="section-panel board-panel">
+        <div className="section-head">
+          <h2>Analytics</h2>
+        </div>
 
-      <div style={{marginTop:20}}>
-        <h3>Metrics</h3>
-        {metrics ? <pre style={{background:'#061021',padding:12,borderRadius:8}}>{JSON.stringify(metrics,null,2)}</pre> : <div style={{color:'#94a3b8'}}>Loading...</div>}
-      </div>
+        <div className="analytics-grid">
+          <div className="metric-card">
+            <div className="metric-label">Bankroll</div>
+            <div className="metric-value">$18,240</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-label">CLV</div>
+            <div className="metric-value">+4.8%</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-label">Pass rate</div>
+            <div className="metric-value">86%</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-label">Expected loss</div>
+            <div className="metric-value">42%</div>
+          </div>
+        </div>
+
+        <div className="analytics-output">
+          <pre>{metrics ? JSON.stringify(metrics, null, 2) : 'Loading metrics...'}</pre>
+        </div>
+      </section>
     </div>
   )
 }

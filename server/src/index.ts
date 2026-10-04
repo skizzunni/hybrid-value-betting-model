@@ -1,39 +1,40 @@
 import express from 'express'
 import cors from 'cors'
-import { initDb, getTickets, updateTicketResult, getMetrics } from './store.js'
+import { getTickets, getMetrics, updateTicketResult } from './store.js'
 import { runSimulation } from './simulate.js'
 
 const app = express()
 app.use(cors())
 app.use(express.json())
 
-const db = initDb()
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, time: new Date().toISOString() })
+})
 
-app.get('/api/health', (req,res)=> res.json({ok:true, time: new Date().toISOString()}))
-
-app.get('/api/tickets', (req,res)=>{
-  const tickets = getTickets(db)
+app.get('/api/tickets', async (_req, res) => {
+  const tickets = await getTickets()
   res.json(tickets)
 })
 
-app.get('/api/metrics', (req,res)=>{
-  res.json(getMetrics(db))
+app.get('/api/metrics', async (_req, res) => {
+  const metrics = await getMetrics()
+  res.json(metrics)
 })
 
-app.post('/api/simulate', (req,res)=>{
-  const { fair, trials } = req.body
-  const t = Number(trials) || 10000
-  const f = Number(fair) || 0.55
-  const result = runSimulation(f, t)
-  res.json(result)
+app.post('/api/simulate', (req, res) => {
+  const fair = Number(req.body?.fair ?? 0.55)
+  const trials = Number(req.body?.trials ?? 10000)
+  res.json(runSimulation(fair, trials))
 })
 
-app.post('/api/tickets/:name/resolve', (req,res)=>{
+app.post('/api/tickets/:name/resolve', async (req, res) => {
   const { name } = req.params
-  const outcome = req.body.outcome // true/false
-  const ticket = updateTicketResult(db, name, !!outcome)
-  res.json(ticket)
+  const { outcome } = req.body
+  const resolved = await updateTicketResult(name, Boolean(outcome))
+  res.json({ resolved })
 })
 
-const port = process.env.PORT || 4000
-app.listen(port, ()=> console.log('Server listening on', port))
+const port = Number(process.env.PORT || 4000)
+app.listen(port, () => {
+  console.log(`API server listening on http://localhost:${port}`)
+})

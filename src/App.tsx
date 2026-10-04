@@ -26,7 +26,7 @@ export default function App() {
             <Link to="/analytics">Analytics</Link>
           </nav>
 
-          <div style={{display: 'flex', gap: 8}}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <Link to="/dashboard" className="primary-btn">Open dashboard</Link>
           </div>
         </div>

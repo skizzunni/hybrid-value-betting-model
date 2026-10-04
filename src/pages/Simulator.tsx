@@ -1,48 +1,57 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
-export default function Simulator(){
+export default function Simulator() {
   const [fair, setFair] = useState(0.55)
   const [trials, setTrials] = useState(10000)
   const [result, setResult] = useState<any>(null)
-  const [running, setRunning] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  async function runSim(){
-    setRunning(true)
+  async function runSim() {
+    setLoading(true)
     const resp = await fetch('/api/simulate', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({fair, trials})
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fair, trials })
     })
-    const j = await resp.json()
-    setResult(j)
-    setRunning(false)
+    const data = await resp.json()
+    setResult(data)
+    setLoading(false)
   }
 
   return (
-    <div className="container" style={{padding:40}}>
-      <h1>Simulation engine</h1>
-      <p style={{color:'#94a3b8'}}>Run a Monte Carlo simulation of a single bet given a fair probability.</p>
-
-      <div style={{display:'grid',gridTemplateColumns:'160px 1fr',gap:12,alignItems:'center',maxWidth:640}}>
-        <label>Fair probability</label>
-        <input type="number" value={fair} step="0.01" min="0.01" max="0.99" onChange={e=>setFair(parseFloat(e.target.value))} />
-
-        <label>Trials</label>
-        <input type="number" value={trials} onChange={e=>setTrials(parseInt(e.target.value))} />
-
-        <div />
-        <div style={{display:'flex',gap:8}}>
-          <button className="primary-btn" onClick={runSim} disabled={running}>{running? 'Running...' : 'Run'}</button>
-          <button className="secondary-btn" onClick={()=>{setResult(null)}}>Clear</button>
+    <div className="container page-space">
+      <section className="section-panel board-panel">
+        <div className="section-head">
+          <h2>Simulation engine</h2>
         </div>
-      </div>
 
-      {result && (
-        <div style={{marginTop:20}}>
-          <h3>Result</h3>
-          <pre style={{background:'#061021',padding:12,borderRadius:8,overflow:'auto'}}>{JSON.stringify(result,null,2)}</pre>
+        <div className="sim-grid">
+          <div className="sim-controls">
+            <label>
+              Fair probability
+              <input type="number" value={fair} min={0.01} max={0.99} step={0.01} onChange={(e) => setFair(Number(e.target.value))} />
+            </label>
+
+            <label>
+              Trial count
+              <input type="number" value={trials} min={100} step={100} onChange={(e) => setTrials(Number(e.target.value))} />
+            </label>
+
+            <div className="cta-row">
+              <button className="primary-btn" onClick={runSim} disabled={loading}>{loading ? 'Running...' : 'Run sim'}</button>
+              <button className="secondary-btn" onClick={() => setResult(null)}>Clear</button>
+            </div>
+          </div>
+
+          <div className="sim-output">
+            {result ? (
+              <pre>{JSON.stringify(result, null, 2)}</pre>
+            ) : (
+              <div className="empty-state">No simulation run yet. Set fair probability and click Run sim.</div>
+            )}
+          </div>
         </div>
-      )}
+      </section>
     </div>
   )
 }

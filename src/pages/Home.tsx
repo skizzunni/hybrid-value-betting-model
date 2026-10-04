@@ -1,20 +1,73 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-export default function Home(){
+const cards = [
+  'Probability-first edge engine',
+  '15-minute refresh loop',
+  'Correlation-adjusted multi-leg tickets',
+  'Continuous loss-learning model'
+]
+
+export default function Home() {
   return (
-    <div className="container" style={{padding: 60}}>
-      <h1 style={{fontSize:36}}>Hybrid Value — Multi-page demo</h1>
-      <p style={{color:'#94a3b8'}}>Welcome. Use the links above to open the Dashboard, run simulations, or view analytics.</p>
+    <div className="container page-space">
+      <section className="hero-panel">
+        <div className="hero-copy">
+          <div className="eyebrow">Uncertainty-priced execution</div>
+          <h1>One integrated betting model for sides, totals, props, and multi-leg tickets.</h1>
+          <p>
+            Built to run as a single operating system: live odds, model probability, correlation-aware ticket pricing,
+            and continuous loss feedback that updates the engine after every result.
+          </p>
+          <div className="cta-row">
+            <Link to="/dashboard" className="primary-btn">Launch monitor</Link>
+            <Link to="/simulator" className="secondary-btn">Run simulator</Link>
+          </div>
+        </div>
 
-      <div style={{marginTop:24, display:'flex', gap:12}}>
-        <Link to="/dashboard" className="primary-btn">Open Dashboard</Link>
-        <Link to="/simulator" className="secondary-btn">Open Simulator</Link>
-      </div>
+        <aside className="stats-panel">
+          <div className="panel-top">
+            <div>
+              <div className="panel-kicker">System health</div>
+              <div className="panel-title">Live & calibrated</div>
+            </div>
+            <div className="panel-icon">✓</div>
+          </div>
+          <div className="status-stack">
+            {[
+              ['Odds feeds', 'Connected', '99.8%'],
+              ['News + injuries', 'Synced', 'Live'],
+              ['Refresh cycle', '15-minute', 'Active'],
+              ['Parlay engine', 'Correlation-aware', 'Online']
+            ].map(([label, value, percent]) => (
+              <div key={label} className="status-row">
+                <div className="status-head">
+                  <span>{label}</span>
+                  <small>{value}</small>
+                </div>
+                <div className="status-bar"><span style={{ width: percent }} /></div>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </section>
 
-      <section style={{marginTop:40}}>
-        <h2>About</h2>
-        <p style={{color:'#94a3b8'}}>This multi-page app pairs a React frontend with a minimal Node/Express simulation backend to demonstrate a hybrid value betting system: probability-first modeling, live refresh, correlation-aware parlay adjustments, and loss feedback.</p>
+      <section className="section-block">
+        <div className="section-head">
+          <h2>Core capabilities</h2>
+        </div>
+        <div className="feature-grid">
+          {cards.map((card, i) => (
+            <article className="feature-card" key={card}>
+              <div className="feature-icon">0{i + 1}</div>
+              <h3>{card}</h3>
+              <p>
+                The platform continuously rebuilds tickets from fresh distributions, checks risk tolerance,
+                and rejects marginal scenarios before they become costly decisions.
+              </p>
+            </article>
+          ))}
+        </div>
       </section>
     </div>
   )
