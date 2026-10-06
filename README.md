@@ -31,6 +31,25 @@ npm run dev
 - POST /api/simulate
 - POST /api/tickets/:name/resolve
 
+## Daily picks, tracking and learning
+
+Outputs are not guaranteed, and parlays are high variance. A 25-leg ticket almost never hits.
+
+- `scripts/generate-picks.mjs` posts **25 legs/day across NFL, NBA, MLB, NHL, EPL and UFC**. Edge is
+  `consensus no-vig probability (Pinnacle x3) - implied probability at the best available price`
+  (line-shopping value, not proof of positive EV). It only runs in the **12:00-8:00 AM ET** window and once per ET date;
+  `.github/workflows/daily-picks.yml` schedules several UTC crons to cover EDT/EST. If fewer than 25 legs qualify, it
+  writes `data/status.json` with the reason and fails the job.
+- `data/picks-log.jsonl` (append-only) stores every pick; `data/results.jsonl` stores grades (win/loss/push, scores,
+  resolution time) and closing lines/CLV. `data/report.json` holds segment stats (sport, market, favorite/underdog, odds bucket,
+  edge band), calibration buckets, loss causes, and win/lose conditions.
+- `scripts/grade-picks.mjs` (also run every 3 hours by `grade-picks.yml`) grades from The Odds API scores endpoint
+  (needs a plan that includes it; 3-day lookback) and captures closing lines before start.
+- Learning: a segment needs 50+ graded results and a Wilson interval excluding the price-implied rate before it is flagged.
+  Losing segments are cut from future slates, winning ones get a 1.25x score; otherwise selection stays neutral.
+
+Run locally: `ODDS_API_KEY=... node scripts/generate-picks.mjs --force` and `node scripts/grade-picks.mjs`.
+
 ## Daily Ticket Engine
 
 The engine line-shops the configured bookmakers, de-vigs each equivalent market,
@@ -141,7 +160,7 @@ Every game on the slate for NFL, NBA, MLB, NHL, EPL soccer and UFC is stored, no
 | `data/games/<Sport>.jsonl` | One record per event, keyed by The Odds API event id (`aliases` holds changed ids): sport, league, home/away (or fighters), `commence_time`, `status` (`scheduled`, `in_progress`, `final`, `postponed`, `cancelled`), `result` (scores, `winner` = `home`/`away`/`draw`/`no_contest`, source), `odds.opening/latest/closing` (moneyline, spread, total) plus per-book `books`, `decisions` (picked/passed with reason per pick date), `audit` corrections, and `first_seen` / `last_updated` / `resolved_at`. |
 | `data/pick-legs.jsonl` | One record per published leg, joined to a game by `game_id`: odds taken, model probability, `result` (win/loss/push/void), profit, closing odds and CLV, audit trail. Published fields are never rewritten; only result fields change. |
 | `data/analytics.json` | Coverage per sport, favorite vs underdog, home/away, price buckets, totals over/under, market calibration across all games, model vs market Brier, CLV, passed-game outcomes, win/lose conditions. |
-| `data/status.json` | Last pick run, last results run, last evening refresh, counts of tracked/resolved/unresolved/stale games and errors. The Analytics and Post-mortems pages read this and label the data live, sample (nothing tracked yet) or stale (no results refresh for 36 hours). |
+| `data/tracking-status.json` | Last pick run, last results run, last evening refresh, counts of tracked/resolved/unresolved/stale games and errors. The Analytics and Post-mortems pages read this and label the data live, sample (nothing tracked yet) or stale (no results refresh for 36 hours). |
 
 Moneyline, spread and total outcomes resolve to win / loss / push / void. Postponed and cancelled games void; soccer is three-way (a draw loses a team moneyline and wins a `Draw` pick); a tie in a two-way market, including a UFC draw, pushes; UFC no-contests void; overtime scores count. A ticket loses on any lost leg and drops pushed or voided legs. A game with no result seven days after start is voided with an audit entry. If an Odds API event id changes for the same fixture, the new id is stored as an alias.
 
@@ -149,14 +168,16 @@ Scores come from The Odds API scores endpoint (one request per sport covering al
 
 A segment is flagged a win or lose condition only with at least 50 resolved legs and a Wilson interval entirely above or below the break-even rate implied by the prices taken.
 
+The game-tracking layer builds on the pick log above (`data/picks-log.jsonl`, `results.jsonl`, `report.json`, `data/status.json` for the pick run). It keeps its own `data/tracking-status.json` so it never collides with the generator's `data/status.json`; pick legs are joined to games through the event id in each pick id.
+
 ### Workflow schedule (Eastern Time)
 
 GitHub cron is UTC and ignores DST, so each workflow fires at several UTC hours and `scripts/et-guard.mjs` checks the real `America/New_York` clock.
 
-- `daily-picks.yml`: triggers hourly 04:17 to 13:17 UTC. It proceeds only when the ET hour is 0 to 7 and picks have not already succeeded for that ET date, so it runs once per ET day inside midnight to 8 AM ET and a failed attempt is retried by later triggers. Order: resolve outcomes and refresh analytics, track the slate, generate picks, link picks to games and verify at least 25 qualified legs.
+- `daily-picks.yml`: triggers hourly 04:17 to 13:17 UTC. It proceeds only when the ET hour is 0 to 7 and picks have not already succeeded for that ET date, so it runs once per ET day inside midnight to 8 AM ET and a failed attempt is retried by later triggers. Order: resolve outcomes and refresh analytics, track the slate, grade the pick log, generate picks, link picks to games and verify at least 25 qualified legs.
 - `results-refresh.yml`: results only, triggers 23:20 to 04:20 UTC; the guard allows ET hours 18 to 23, once per ET day. It never runs the generator or alters published picks.
 - Both share the `data-writes` concurrency group (no overlap), use `contents: write` and `issues: write` only, and commit with rebase-and-retry on push conflicts (`scripts/commit-data.sh`).
-- A non-zero exit, an issue labelled `pipeline-failure`, and `data/status.json` flag: odds fetch failure, score failure for a sport with pending games, games still unresolved more than 8 hours after start, data validation failure, or fewer than 25 qualified legs.
+- A non-zero exit, an issue labelled `pipeline-failure`, and `data/tracking-status.json` flag: odds fetch failure, score failure for a sport with pending games, games still unresolved more than 8 hours after start, data validation failure, or fewer than 25 qualified legs.
 
 Manual runs: `workflow_dispatch` with `force` skips the window guard. Locally: `node scripts/resolve-results.mjs`, `node scripts/track-games.mjs`, `node scripts/link-picks.mjs` (set `ODDS_API_KEY`).
 

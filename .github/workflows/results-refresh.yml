@@ -1,7 +1,7 @@
 name: Evening results refresh (ET)
 
 # Results only: grades games and legs that finished since the morning run and refreshes analytics and
-# data/status.json. It never runs the pick generator and never alters already-published picks or
+# data/tracking-status.json. It never runs the pick generator and never alters already-published picks or
 # src/generated/picks.json. Fires 23:20-04:20 UTC; the ET guard allows ET hours 18-23, once per ET day.
 on:
   schedule:
@@ -14,7 +14,7 @@ on:
         default: false
 
 concurrency:
-  group: data-writes
+  group: picks-data
   cancel-in-progress: false
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: ET window guard
         id: guard
@@ -52,7 +52,7 @@ jobs:
         with:
           script: |
             const title = 'Daily pipeline failure'
-            const body = `Results refresh ${context.runId} failed: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nSee \`data/status.json\` for details.`
+            const body = `Results refresh ${context.runId} failed: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nSee \`data/tracking-status.json\` for details.`
             const { data: open } = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', labels: 'pipeline-failure' })
             if (open.length) {
               await github.rest.issues.createComment({ ...context.repo, issue_number: open[0].number, body })

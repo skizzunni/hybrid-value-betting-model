@@ -2,7 +2,7 @@ import Card from './Card'
 import DataTable, { type Column } from './DataTable'
 import Stat from './Stat'
 import analyticsJson from '../../data/analytics.json'
-import statusJson from '../../data/status.json'
+import statusJson from '../../data/tracking-status.json'
 
 type Coverage = { tracked: number; resolved: number; unresolved: number; stale: number; pct_resolved: number | null }
 type RunInfo = { at: string; ok: boolean } | null

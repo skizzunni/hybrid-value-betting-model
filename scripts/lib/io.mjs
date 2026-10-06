@@ -55,7 +55,7 @@ export async function writeJsonl(file, rows, keyField) {
 
 export const gamesFile = (label) => path.join(DATA_DIR, 'games', `${label}.jsonl`)
 export const legsFile = () => path.join(DATA_DIR, 'pick-legs.jsonl')
-export const statusFile = () => path.join(DATA_DIR, 'status.json')
+export const statusFile = () => path.join(DATA_DIR, 'tracking-status.json')
 export const analyticsFile = () => path.join(DATA_DIR, 'analytics.json')
 export const picksFile = () => path.join(process.cwd(), 'src', 'generated', 'picks.json')
 

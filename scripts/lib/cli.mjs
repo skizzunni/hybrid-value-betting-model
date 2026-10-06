@@ -6,7 +6,7 @@ export async function loadStatus() {
   return { ...defaultStatus(), ...(await readJson(statusFile(), {})) }
 }
 
-// Run a pipeline step; on failure persist the failure into data/status.json and exit non-zero.
+// Run a pipeline step; on failure persist the failure into data/tracking-status.json and exit non-zero.
 export async function runStep(run, fn) {
   const now = new Date().toISOString()
   try {

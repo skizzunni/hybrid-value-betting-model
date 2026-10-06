@@ -20,7 +20,9 @@ export function linkPicks({ picksJson, games, legs, pickDate, now }) {
 
   for (const group of groups) {
     for (const item of group.items || []) {
-      const game = games.find((g) => (item.event_id && (g.id === item.event_id || g.aliases?.includes(item.event_id))) || (g.sport_key === item.sport && titleMatches(g, item.title)))
+      // Published pick ids are `runDate|sport_key|event_id|market|side`; join on the event id when present.
+      const eventId = item.event_id || (typeof item.id === 'string' ? item.id.split('|')[2] : undefined)
+      const game = games.find((g) => (eventId && (g.id === eventId || g.aliases?.includes(eventId))) || ((g.sport === item.sport || g.sport_key === item.sport) && titleMatches(g, item.title)))
       const market = MARKETS[String(item.market || 'Moneyline').toLowerCase()] || 'moneyline'
       if (!game) {
         unmatched.push(item.title)
@@ -61,7 +63,7 @@ export function linkPicks({ picksJson, games, legs, pickDate, now }) {
       addDecision(game, { pick_date: pickDate, decision: 'picked', reason: null })
       continue
     }
-    const given = passedInput.find((p) => p.event_id === game.id || (p.sport === game.sport_key && p.title && titleMatches(game, p.title)))
+    const given = passedInput.find((p) => p.event_id === game.id || ((p.sport === game.sport_key || p.sport === game.sport) && p.title && titleMatches(game, p.title)))
     const reason = given?.reason || (game.odds.latest.h2h ? 'not_selected' : 'no_moneyline_market')
     if (addDecision(game, { pick_date: pickDate, decision: 'passed', reason })) passes++
   }

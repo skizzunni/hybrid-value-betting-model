@@ -1,144 +1,103 @@
 #!/usr/bin/env node
+// Daily slate: 25 legs across all sports, appended to a durable pick log.
+// Runs only inside the 12:00-8:00 AM ET window (override with --force) and only once per ET date.
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import {
+  DAILY_LEGS, MODEL_VERSION, SPORT_KEYS, buildCandidates, buildReport, appendJsonl, easternParts,
+  inGenerationWindow, makePickRecord, mergeResults, readJsonl, segmentWeights, selectDaily,
+} from './lib/tracker.mjs'
+import { fetchOdds } from './lib/odds-api.mjs'
 
+const root = process.cwd()
+const dataDir = path.join(root, 'data')
+const force = process.argv.includes('--force')
 const apiKey = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 
-if (!apiKey) {
-  console.error('ODDS_API_KEY is required')
+async function writeJson(file, value) {
+  await fs.mkdir(path.dirname(file), { recursive: true })
+  await fs.writeFile(file, JSON.stringify(value, null, 2) + '\n', 'utf8')
+}
+
+async function fail(status, reason) {
+  console.error(`::error::${reason}`)
+  await writeJson(path.join(dataDir, 'status.json'), { ...status, status: 'failed', reason })
   process.exit(1)
 }
 
-const SPORT_KEYS = {
-  NFL: 'americanfootball_nfl',
-  NBA: 'basketball_nba',
-  MLB: 'baseball_mlb',
-  NHL: 'icehockey_nhl',
-  Soccer: 'soccer_epl',
-  UFC: 'mma_mixed_martial_arts',
-}
-
-function americanOddsToProb(odds) {
-  if (odds > 0) return 100 / (odds + 100)
-  return -odds / (-odds + 100)
-}
-
-function parseMarket(event) {
-  const bookmakers = event.bookmakers || []
-  const outcomes = {}
-
-  for (const book of bookmakers) {
-    const market =
-      (book.markets || []).find(
-        (m) => m.key === 'h2h' || m.key === 'moneyline' || m.key === 'spreads'
-      ) || null
-
-    if (!market) continue
-
-    for (const outcome of market.outcomes || []) {
-      const name = outcome.name
-      const price = outcome.price
-      if (!outcomes[name] || Math.abs(price) < Math.abs(outcomes[name])) {
-        outcomes[name] = price
-      }
-    }
-  }
-
-  const entries = Object.entries(outcomes)
-  if (!entries.length) return null
-
-  let best = null
-  for (const [name, price] of entries) {
-    const prob = americanOddsToProb(price)
-    if (!best || prob < best.prob) {
-      best = { name, price, prob }
-    }
-  }
-
-  if (!best) return null
-
-  const fair = Math.min(0.95, best.prob + 0.02)
-
-  return {
-    title: `${event.home_team} vs ${event.away_team}`,
-    sport: event.sport_key || 'multi',
-    market: 'Moneyline',
-    side: best.name,
-    odds: best.price,
-    fair,
-    edge: Number(((fair - best.prob) * 100).toFixed(2)),
-    confidence: fair >= 0.7 ? 'High' : fair >= 0.62 ? 'Medium' : 'Low',
-    units: fair >= 0.75 ? 2 : fair >= 0.7 ? 1.5 : 1,
-    notes: [
-      `Market implied ${(best.prob * 100).toFixed(1)}%`,
-      `Model fair ${(fair * 100).toFixed(1)}%`,
-      'High-probability side with matchup edge',
-    ],
-  }
-}
-
-async function fetchSport(sportKey) {
-  const url = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?regions=us,eu&markets=moneyline,spreads,totals&oddsFormat=american&dateFormat=iso&apiKey=${apiKey}`
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(`Failed ${sportKey}: ${res.status} ${res.statusText}`)
-  }
-  return res.json()
-}
-
 async function main() {
-  const generated = []
+  const now = new Date()
+  const et = easternParts(now)
+  const base = { checked_at: now.toISOString(), et_date: et.date, model_version: MODEL_VERSION, legs: 0 }
 
-  for (const [label, sportKey] of Object.entries(SPORT_KEYS)) {
+  if (!force && !inGenerationWindow(now)) {
+    console.log(`Skipping: ET hour ${et.hour} is outside the 12:00 AM-8:00 AM ET window`)
+    return
+  }
+  const picksFile = path.join(dataDir, 'picks-log.jsonl')
+  const history = await readJsonl(picksFile)
+  if (!force && history.some((p) => p.run_date === et.date)) {
+    console.log(`Skipping: picks for ${et.date} already recorded`)
+    return
+  }
+  if (!apiKey) await fail(base, 'ODDS_API_KEY is required')
+
+  const candidates = []
+  const failures = []
+  for (const [label, key] of Object.entries(SPORT_KEYS)) {
     try {
-      const events = await fetchSport(sportKey)
-      const picks = []
-
-      for (const event of events || []) {
-        const pick = parseMarket(event)
-        if (pick) picks.push(pick)
-      }
-
-      const limited = picks.slice(0, 25)
-      if (limited.length) {
-        generated.push({
-          id: sportKey,
-          label: `${label} Moneylines`,
-          note: `Live ${label} moneyline picks`,
-          items: limited,
-        })
-      }
+      const events = await fetchOdds(key, apiKey)
+      for (const event of events || []) candidates.push(...buildCandidates(event, now))
     } catch (err) {
-      console.warn(`Skipping ${label}: ${err.message}`)
+      failures.push(`${label}: ${err.message}`)
+      console.warn(`Fetch failed for ${label}: ${err.message}`)
     }
   }
+  if (failures.length === Object.keys(SPORT_KEYS).length) await fail({ ...base, fetch_failures: failures }, 'All odds fetches failed')
 
-  const all = generated.flatMap((group) => group.items)
+  const results = mergeResults(await readJsonl(path.join(dataDir, 'results.jsonl')))
+  const report = buildReport(history, results, { now })
+  const weights = segmentWeights(report.segments)
+  const { picks, shortfall, reason } = selectDaily(candidates, weights)
 
-  generated.unshift({
-    id: 'most-confident',
-    label: 'Most Confident',
-    note: 'Highest-probability picks across all sports',
-    items: all.slice().sort((a, b) => b.fair - a.fair).slice(0, 25),
-  })
-
-  const output = {
-    generated_at: new Date().toISOString(),
-    groups: generated,
+  const sportsCovered = [...new Set(picks.map((p) => p.sport))]
+  const status = { ...base, legs: picks.length, sports: sportsCovered, fetch_failures: failures, cut_segments: [...weights.lose], emphasised_segments: [...weights.win] }
+  if (shortfall > 0) {
+    await fail(status, `${reason}${failures.length ? `; fetch failures: ${failures.join('; ')}` : ''}`)
   }
 
-  const outDir = path.join(process.cwd(), 'src', 'generated')
-  await fs.mkdir(outDir, { recursive: true })
-  await fs.writeFile(
-    path.join(outDir, 'picks.json'),
-    JSON.stringify(output, null, 2),
-    'utf8'
-  )
+  const records = picks.map((p) => makePickRecord(p, { now, runDate: et.date }))
+  await appendJsonl(picksFile, records)
+  await writeJson(path.join(dataDir, 'status.json'), { ...status, status: 'ok', reason: null })
 
-  console.log(`Wrote ${generated.length} groups with ${all.length} picks`)
+  const items = records.map((r) => ({
+    id: r.id,
+    title: r.event,
+    sport: r.sport,
+    market: 'Moneyline',
+    side: r.side,
+    odds: r.odds,
+    fair: r.model_prob,
+    edge: Number((r.edge * 100).toFixed(2)),
+    confidence: r.confidence,
+    units: r.units,
+    notes: [
+      `Best price ${r.odds} at ${r.book} (implied ${(r.implied_prob * 100).toFixed(1)}%)`,
+      `Consensus no-vig ${(r.model_prob * 100).toFixed(1)}% across ${r.n_books} books`,
+      `${r.tags.role}, ${r.tags.odds_bucket}, edge ${r.tags.edge_band}`,
+    ],
+  }))
+  await writeJson(path.join(root, 'src', 'generated', 'picks.json'), {
+    generated_at: now.toISOString(),
+    et_date: et.date,
+    mode: 'live',
+    status: 'ok',
+    groups: [{ id: 'daily-25', label: `Daily ${DAILY_LEGS} legs`, note: 'Line-shopping value vs. consensus no-vig price. Not guaranteed; parlays are high variance.', items }],
+  })
+  console.log(`Recorded ${records.length} legs for ${et.date} across ${sportsCovered.join(', ')}`)
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
   console.error(err)
   process.exit(1)
 })

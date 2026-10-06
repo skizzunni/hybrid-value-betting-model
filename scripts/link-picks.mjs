@@ -14,16 +14,18 @@ await runStep('pick', async (now) => {
   const games = await loadAllGames(SPORT_LABELS)
   const legs = await readJsonl(legsFile())
   const pickDate = etDate(new Date(now))
+  const staleSlate = picksJson.et_date && picksJson.et_date !== pickDate
   const r = linkPicks({ picksJson, games, legs, pickDate, now })
   const slate = checkSlate(picksJson, Number(process.env.MIN_LEGS || MIN_LEGS))
   // Only publish (persist) a slate that meets the minimum, so a failed attempt can be retried cleanly.
-  if (slate.ok) {
+  if (slate.ok && !staleSlate) {
     legs.push(...r.added)
     await saveAllGames(games, SPORT_LABELS)
     await writeJsonl(legsFile(), legs, 'leg_id')
   }
 
   const problems = []
+  if (staleSlate) problems.push(`picks.json is from ${picksJson.et_date}, not today (${pickDate}); generation did not publish a new slate`)
   if (!slate.ok) problems.push(`only ${slate.count} qualified legs on the slate (need ${slate.min})`)
   if (r.unmatched.length) problems.push(`${r.unmatched.length} pick(s) could not be linked to a tracked game`)
   const invalid = validateData({ games, legs })
