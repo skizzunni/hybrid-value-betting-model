@@ -149,6 +149,45 @@ Loss classification uses measured evidence only: pick-time edge, recorded CLV, m
 
 Segments report sample count, predicted and observed hit rates, Brier score, ROI, CLV when known and Wilson confidence intervals. A leak requires at least 50 resolved bets by default and statistically significant underperformance. The optional probability adjustment is off by default; it uses empirical-Bayes shrinkage, is limited to a five percentage-point shift, and writes an evidence-backed change log that can be exported or reset. Single losses rarely mean the model was wrong. We only adjust on aggregated evidence. This system cannot guarantee winning.
 
+## Game-level tracking and automatic results
+
+Every game on the slate for NFL, NBA, MLB, NHL, EPL soccer and UFC is stored, not only the games the model picked. This layer is additive: it reads `src/generated/picks.json` and does not change the pick generator.
+
+### Data layout (committed, diff-friendly, stable key order)
+
+| Path | Contents |
+| --- | --- |
+| `data/games/<Sport>.jsonl` | One record per event, keyed by The Odds API event id (`aliases` holds changed ids): sport, league, home/away (or fighters), `commence_time`, `status` (`scheduled`, `in_progress`, `final`, `postponed`, `cancelled`), `result` (scores, `winner` = `home`/`away`/`draw`/`no_contest`, source), `odds.opening/latest/closing` (moneyline, spread, total) plus per-book `books`, `decisions` (picked/passed with reason per pick date), `audit` corrections, and `first_seen` / `last_updated` / `resolved_at`. |
+| `data/pick-legs.jsonl` | One record per published leg, joined to a game by `game_id`: odds taken, model probability, `result` (win/loss/push/void), profit, closing odds and CLV, audit trail. Published fields are never rewritten; only result fields change. |
+| `data/analytics.json` | Coverage per sport, favorite vs underdog, home/away, price buckets, totals over/under, market calibration across all games, model vs market Brier, CLV, passed-game outcomes, win/lose conditions. |
+| `data/tracking-status.json` | Last pick run, last results run, last evening refresh, counts of tracked/resolved/unresolved/stale games and errors. The Analytics and Post-mortems pages read this and label the data live, sample (nothing tracked yet) or stale (no results refresh for 36 hours). |
+
+Moneyline, spread and total outcomes resolve to win / loss / push / void. Postponed and cancelled games void; soccer is three-way (a draw loses a team moneyline and wins a `Draw` pick); a tie in a two-way market, including a UFC draw, pushes; UFC no-contests void; overtime scores count. A ticket loses on any lost leg and drops pushed or voided legs. A game with no result seven days after start is voided with an audit entry. If an Odds API event id changes for the same fixture, the new id is stored as an alias.
+
+Scores come from The Odds API scores endpoint (one request per sport covering all pending games, `daysFrom` capped at 3 and skipped when nothing is pending), with ESPN public scoreboards as the fallback for UFC, games older than three days, and any Odds API failure (one date-range request per sport, memoized per run). Re-running is idempotent: unchanged results are skipped, changed results are written as audited corrections. Closing-line value uses the last odds snapshot before commence; odds freeze at start time.
+
+A segment is flagged a win or lose condition only with at least 50 resolved legs and a Wilson interval entirely above or below the break-even rate implied by the prices taken.
+
+The game-tracking layer builds on the pick log above (`data/picks-log.jsonl`, `results.jsonl`, `report.json`, `data/status.json` for the pick run). It keeps its own `data/tracking-status.json` so it never collides with the generator's `data/status.json`; pick legs are joined to games through the event id in each pick id.
+
+### Workflow schedule (Eastern Time)
+
+GitHub cron is UTC and ignores DST, so each workflow fires at several UTC hours and `scripts/et-guard.mjs` checks the real `America/New_York` clock.
+
+- `daily-picks.yml`: triggers hourly 04:17 to 13:17 UTC. It proceeds only when the ET hour is 0 to 7 and picks have not already succeeded for that ET date, so it runs once per ET day inside midnight to 8 AM ET and a failed attempt is retried by later triggers. Order: resolve outcomes and refresh analytics, track the slate, grade the pick log, generate picks, link picks to games and verify at least 25 qualified legs.
+- `results-refresh.yml`: results only, triggers 23:20 to 04:20 UTC; the guard allows ET hours 18 to 23, once per ET day. It never runs the generator or alters published picks.
+- Both share the `data-writes` concurrency group (no overlap), use `contents: write` and `issues: write` only, and commit with rebase-and-retry on push conflicts (`scripts/commit-data.sh`).
+- A non-zero exit, an issue labelled `pipeline-failure`, and `data/tracking-status.json` flag: odds fetch failure, score failure for a sport with pending games, games still unresolved more than 8 hours after start, data validation failure, or fewer than 25 qualified legs.
+
+Manual runs: `workflow_dispatch` with `force` skips the window guard. Locally: `node scripts/resolve-results.mjs`, `node scripts/track-games.mjs`, `node scripts/link-picks.mjs` (set `ODDS_API_KEY`).
+
+### Required secret and limitations
+
+- `ODDS_API_KEY` must be a plan that includes the scores endpoint. Each run spends roughly one odds request per sport plus one scores request per sport with pending games.
+- ESPN scoreboards are an unofficial public API and team/fighter names are matched by normalized name and start time; unmatched games stay unresolved and show up as stale.
+- Passed-game reasons come from a `passed` array in `picks.json` when the generator supplies one; otherwise they are inferred (`not_selected`, `no_moneyline_market`).
+- Tracking measures performance and does not guarantee future profit. No outcome is guaranteed, parlays are high variance, and 25-leg tickets are entertainment.
+
 ## Deploying on Render (SPA routing)
 
 `render.yaml` declares a rewrite (`/*` -> `/index.html`) so that refreshing client-side routes such as `/tickets` works. If the service was created manually in the Render dashboard (not from the blueprint), `render.yaml` is ignored: add the rewrite under **Redirects/Rewrites** (Source `/*`, Destination `/index.html`, Action `Rewrite`).

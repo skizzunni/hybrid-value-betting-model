@@ -7,6 +7,7 @@ import EmptyState from '../components/EmptyState'
 import LineChart from '../components/LineChart'
 import PageHeader from '../components/PageHeader'
 import Stat from '../components/Stat'
+import TrackingPanel from '../components/TrackingPanel'
 import { clearLedger, getLedgerSummary, getSideCalibration, getSidedResults, loadLedger, type AnalyticsSide, type CalibrationPoint, type LedgerEntry } from '../engine/ledger'
 import { getCalibration } from '../engine/calibration'
 import { currency, percent, probability, signedCurrency, signedPercent } from '../lib/format'
@@ -101,6 +102,7 @@ export default function Analytics() {
         subtitle="Performance of tickets you've logged. Results are stored locally in this browser."
         actions={entries.length > 0 && <button type="button" className="btn" onClick={clear}>Clear ledger</button>}
       />
+      <TrackingPanel />
       {entries.length === 0 ? (
         <EmptyState
           title="No results logged yet"

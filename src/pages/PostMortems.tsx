@@ -5,6 +5,7 @@ import Disclaimer from '../components/Disclaimer'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
 import Stat from '../components/Stat'
+import TrackingPanel from '../components/TrackingPanel'
 import { loadLedger, type LedgerEntry, updateTicketSettlement } from '../engine/ledger'
 import { aggregateResults, findLeaks, type ResolvedBet, type SegmentStats } from '../engine/postmortem/aggregate'
 import { classifyLoss, type LossAnalysis, type LossCause } from '../engine/postmortem/classify'
@@ -254,6 +255,7 @@ export default function PostMortems() {
       <p className="notice" role="note">Single losses rarely mean the model was wrong. We only adjust on aggregated evidence.</p>
       <p className="leg-sub">Scores and pick snapshots are stored locally in this browser. Missing scores or closing prices stay unknown; player-level and injury causes are not inferred.</p>
       {status && <p className="notice" role="status">{status}</p>}
+      <TrackingPanel />
 
       <div className="grid-stats">
         <Stat label="Losses analyzed" value={losses.length} hint={`${snapshots.length} saved leg snapshots`} />

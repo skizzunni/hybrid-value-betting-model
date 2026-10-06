@@ -1,21 +1,16 @@
-name: Daily generate picks
+name: Daily outcomes + picks (ET)
 
-# Target window: 12:00 AM - 8:00 AM Eastern. GitHub cron is UTC-only and ET shifts with DST
-# (EDT = UTC-4, EST = UTC-5), so several UTC times are scheduled. The script itself only
-# generates when the current ET hour is 0-7 and when today's (ET) slate is not yet recorded,
-# so extra triggers are harmless retries for GitHub's scheduling delays.
-#   04:30 UTC = 12:30 AM EDT (11:30 PM EST - skipped by the script)
-#   05:30 UTC = 01:30 AM EDT / 12:30 AM EST
-#   07:00 UTC = 03:00 AM EDT / 02:00 AM EST (retry)
+# Window: midnight-8 AM America/New_York. GitHub cron is UTC-only and cannot follow DST, so this fires
+# hourly from 04:17 to 13:17 UTC (covers 00:00-08:00 ET in both EDT and EST). The ET guard
+# (scripts/et-guard.mjs) lets a run proceed only when the real ET hour is 0-7 and picks have not already
+# been published successfully for that ET date. A failed attempt is retried by the next trigger.
 on:
   schedule:
-    - cron: '30 4 * * *'
-    - cron: '30 5 * * *'
-    - cron: '0 7 * * *'
+    - cron: '17 4-13 * * *'
   workflow_dispatch:
     inputs:
       force:
-        description: 'Ignore the ET window / once-per-day guard'
+        description: 'Skip the ET window guard'
         type: boolean
         default: false
 
@@ -23,47 +18,75 @@ concurrency:
   group: picks-data
   cancel-in-progress: false
 
+permissions:
+  contents: write
+  issues: write
+
 jobs:
-  generate:
+  daily:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+    timeout-minutes: 20
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Grade pending picks
+      - name: ET window guard
+        id: guard
+        run: node scripts/et-guard.mjs picks ${{ inputs.force && '--force' || '' }}
+
+      - name: 1. Resolve outcomes and refresh analytics
+        if: steps.guard.outputs.run == 'true'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: node scripts/resolve-results.mjs
+
+      - name: 2. Track today's slate (every game)
+        if: steps.guard.outputs.run == 'true'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: node scripts/track-games.mjs
+
+      - name: 2b. Grade pending picks (pick log, closing lines, report)
         id: grade
+        if: steps.guard.outputs.run == 'true'
         continue-on-error: true
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/grade-picks.mjs
 
-      - name: Generate picks
-        id: generate
-        continue-on-error: true
+      - name: 3. Generate picks (25 legs, learning-weighted)
+        if: steps.guard.outputs.run == 'true'
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/generate-picks.mjs ${{ inputs.force && '--force' || '' }}
 
-      - name: Commit picks and tracking data
-        if: always()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data src/generated/picks.json
-          git diff --cached --quiet || git commit -m "Auto-update picks and results"
-          git pull --rebase origin main
-          git push origin HEAD:main
+      - name: 4. Link picks to games and check 25-leg slate
+        if: steps.guard.outputs.run == 'true'
+        run: node scripts/link-picks.mjs
 
-      - name: Fail loudly if grading or generation failed
-        if: steps.grade.outcome == 'failure' || steps.generate.outcome == 'failure'
+      - name: Commit data
+        if: always() && steps.guard.outputs.run == 'true'
+        run: bash scripts/commit-data.sh "Auto-update picks and outcomes" src/generated/picks.json data
+
+      - name: Fail loudly if pick grading failed
+        if: steps.grade.outcome == 'failure'
         run: |
-          echo "::error::grade=${{ steps.grade.outcome }} generate=${{ steps.generate.outcome }} (see data/status.json)"
+          echo "::error::scripts/grade-picks.mjs failed (see data/report.json and logs)"
           exit 1
+
+      - name: Open issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Daily pipeline failure'
+            const body = `Run ${context.runId} failed: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nSee \`data/tracking-status.json\` (and \`data/status.json\` for the pick run) for details.`
+            const { data: open } = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', labels: 'pipeline-failure' })
+            if (open.length) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: open[0].number, body })
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body, labels: ['pipeline-failure'] })
+            }
