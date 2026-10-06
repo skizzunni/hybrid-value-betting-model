@@ -1,9 +1,27 @@
 name: Daily generate picks
 
+# Target window: 12:00 AM - 8:00 AM Eastern. GitHub cron is UTC-only and ET shifts with DST
+# (EDT = UTC-4, EST = UTC-5), so several UTC times are scheduled. The script itself only
+# generates when the current ET hour is 0-7 and when today's (ET) slate is not yet recorded,
+# so extra triggers are harmless retries for GitHub's scheduling delays.
+#   04:30 UTC = 12:30 AM EDT (11:30 PM EST - skipped by the script)
+#   05:30 UTC = 01:30 AM EDT / 12:30 AM EST
+#   07:00 UTC = 03:00 AM EDT / 02:00 AM EST (retry)
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '30 4 * * *'
+    - cron: '30 5 * * *'
+    - cron: '0 7 * * *'
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Ignore the ET window / once-per-day guard'
+        type: boolean
+        default: false
+
+concurrency:
+  group: picks-data
+  cancel-in-progress: false
 
 jobs:
   generate:
@@ -18,20 +36,34 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Generate picks
+      - name: Grade pending picks
+        id: grade
+        continue-on-error: true
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-        run: node scripts/generate-picks.mjs
+        run: node scripts/grade-picks.mjs
 
-      - name: Commit picks
+      - name: Generate picks
+        id: generate
+        continue-on-error: true
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: node scripts/generate-picks.mjs ${{ inputs.force && '--force' || '' }}
+
+      - name: Commit picks and tracking data
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/generated/picks.json || true
-          git diff --cached --quiet || git commit -m "Auto-update picks" || echo "no changes to commit"
+          git add data src/generated/picks.json
+          git diff --cached --quiet || git commit -m "Auto-update picks and results"
+          git pull --rebase origin main
           git push origin HEAD:main
+
+      - name: Fail loudly if grading or generation failed
+        if: steps.grade.outcome == 'failure' || steps.generate.outcome == 'failure'
+        run: |
+          echo "::error::grade=${{ steps.grade.outcome }} generate=${{ steps.generate.outcome }} (see data/status.json)"
+          exit 1
