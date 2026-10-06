@@ -1,11 +1,440 @@
 {
-  "generated_at": "2026-10-05T13:43:29.630Z",
+  "generated_at": "2026-10-06T11:17:44.958Z",
+  "et_date": "2026-10-06",
+  "mode": "live",
+  "status": "ok",
   "groups": [
     {
-      "id": "most-confident",
-      "label": "Most Confident",
-      "note": "Highest-probability picks across all sports",
-      "items": []
+      "id": "daily-25",
+      "label": "Daily 25 legs",
+      "note": "Line-shopping value vs. consensus no-vig price. Not guaranteed; parlays are high variance.",
+      "items": [
+        {
+          "id": "2026-10-06|icehockey_nhl|e77f5de1229c03c1338f5cf3eb6797ba|h2h|Chicago Blackhawks",
+          "title": "St Louis Blues @ Chicago Blackhawks",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Chicago Blackhawks",
+          "odds": 205,
+          "fair": 0.3994,
+          "edge": 7.16,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 205 at LeoVegas (SE) (implied 32.8%)",
+            "Consensus no-vig 39.9% across 27 books",
+            "underdog, underdog, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|ab12d4dc632ea010114de1409ca7a64b|h2h|New York Rangers",
+          "title": "New York Islanders @ New York Rangers",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "New York Rangers",
+          "odds": 117,
+          "fair": 0.5284,
+          "edge": 6.76,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 117 at 1xBet (implied 46.1%)",
+            "Consensus no-vig 52.8% across 27 books",
+            "underdog, pickem, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|basketball_nba|60431a347feac3f1c7ed925b8b769ec5|h2h|Chicago Bulls",
+          "title": "Chicago Bulls @ Toronto Raptors",
+          "sport": "NBA",
+          "market": "Moneyline",
+          "side": "Chicago Bulls",
+          "odds": 285,
+          "fair": 0.3179,
+          "edge": 5.82,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 285 at FanDuel (implied 26.0%)",
+            "Consensus no-vig 31.8% across 3 books",
+            "underdog, long_shot, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|basketball_nba|f6be3e587d43c3821d8f059c3a1f1967|h2h|Sacramento Kings",
+          "title": "Sacramento Kings @ Los Angeles Clippers",
+          "sport": "NBA",
+          "market": "Moneyline",
+          "side": "Sacramento Kings",
+          "odds": 128,
+          "fair": 0.4754,
+          "edge": 3.68,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 128 at FanDuel (implied 43.9%)",
+            "Consensus no-vig 47.5% across 3 books",
+            "underdog, underdog, edge 2-4%"
+          ]
+        },
+        {
+          "id": "2026-10-06|mma_mixed_martial_arts|b9c671498bbbdba2985209aedf81053e|h2h|Allen Frye Jr.",
+          "title": "RJ Harris @ Allen Frye Jr.",
+          "sport": "UFC",
+          "market": "Moneyline",
+          "side": "Allen Frye Jr.",
+          "odds": 265,
+          "fair": 0.2873,
+          "edge": 1.33,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 265 at BetOnline.ag (implied 27.4%)",
+            "Consensus no-vig 28.7% across 13 books",
+            "underdog, long_shot, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|mma_mixed_martial_arts|87552145280ee8da5dc5ce22d35a9a83|h2h|Darya Zheleznyakova",
+          "title": "Darya Zheleznyakova @ Alice Pereira",
+          "sport": "UFC",
+          "market": "Moneyline",
+          "side": "Darya Zheleznyakova",
+          "odds": 133,
+          "fair": 0.4423,
+          "edge": 1.31,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 133 at Bovada (implied 42.9%)",
+            "Consensus no-vig 44.2% across 12 books",
+            "underdog, underdog, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|soccer_epl|9fc08b390a49c4434f7cf631a0bb88fb|h2h|Crystal Palace",
+          "title": "Crystal Palace @ Brighton and Hove Albion",
+          "sport": "Soccer",
+          "market": "Moneyline",
+          "side": "Crystal Palace",
+          "odds": 450,
+          "fair": 0.1936,
+          "edge": 1.18,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 450 at BetRivers (implied 18.2%)",
+            "Consensus no-vig 19.4% across 20 books",
+            "underdog, long_shot, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|soccer_epl|45d4a466e32cd2b4ea535207923ceaf5|h2h|Bournemouth",
+          "title": "Bournemouth @ Chelsea",
+          "sport": "Soccer",
+          "market": "Moneyline",
+          "side": "Bournemouth",
+          "odds": 390,
+          "fair": 0.2147,
+          "edge": 1.07,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 390 at Betfair (implied 20.4%)",
+            "Consensus no-vig 21.5% across 29 books",
+            "underdog, long_shot, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|americanfootball_nfl|259b5df9aa0d10257f56de78523495e0|h2h|Tampa Bay Buccaneers",
+          "title": "Tampa Bay Buccaneers @ Dallas Cowboys",
+          "sport": "NFL",
+          "market": "Moneyline",
+          "side": "Tampa Bay Buccaneers",
+          "odds": 410,
+          "fair": 0.2061,
+          "edge": 1,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 410 at Matchbook (implied 19.6%)",
+            "Consensus no-vig 20.6% across 26 books",
+            "underdog, long_shot, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|americanfootball_nfl|21b26266f3d78af02eb672e606275d95|h2h|Philadelphia Eagles",
+          "title": "Philadelphia Eagles @ Jacksonville Jaguars",
+          "sport": "NFL",
+          "market": "Moneyline",
+          "side": "Philadelphia Eagles",
+          "odds": 272,
+          "fair": 0.2771,
+          "edge": 0.83,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 272 at BetUS (implied 26.9%)",
+            "Consensus no-vig 27.7% across 26 books",
+            "underdog, long_shot, edge 0.5-1%"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|3b7b6520b0bc91f44cf9c9575d7e29f7|h2h|Carolina Hurricanes",
+          "title": "Carolina Hurricanes @ Montréal Canadiens",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Carolina Hurricanes",
+          "odds": 145,
+          "fair": 0.4752,
+          "edge": 6.7,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 145 at Unibet (SE) (implied 40.8%)",
+            "Consensus no-vig 47.5% across 27 books",
+            "underdog, underdog, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|10b0f8b34314309a388225ab503d8172|h2h|Vegas Golden Knights",
+          "title": "Vegas Golden Knights @ Seattle Kraken",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Vegas Golden Knights",
+          "odds": 103,
+          "fair": 0.559,
+          "edge": 6.64,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 103 at 1xBet (implied 49.3%)",
+            "Consensus no-vig 55.9% across 27 books",
+            "underdog, pickem, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|3a95439904d3d0af12970bb0c8e66a3a|h2h|Los Angeles Kings",
+          "title": "Florida Panthers @ Los Angeles Kings",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Los Angeles Kings",
+          "odds": 175,
+          "fair": 0.4294,
+          "edge": 6.58,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 175 at 1xBet (implied 36.4%)",
+            "Consensus no-vig 42.9% across 27 books",
+            "underdog, underdog, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|057cbe42c7df314de9ef60d00db04222|h2h|Minnesota Wild",
+          "title": "Minnesota Wild @ Buffalo Sabres",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Minnesota Wild",
+          "odds": 155,
+          "fair": 0.4569,
+          "edge": 6.48,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 155 at Unibet (SE) (implied 39.2%)",
+            "Consensus no-vig 45.7% across 27 books",
+            "underdog, underdog, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|21ac7b574ba4b532a5962a3f55feabeb|h2h|Utah Mammoth",
+          "title": "Utah Mammoth @ New Jersey Devils",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Utah Mammoth",
+          "odds": 185,
+          "fair": 0.4152,
+          "edge": 6.43,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 185 at Unibet (SE) (implied 35.1%)",
+            "Consensus no-vig 41.5% across 27 books",
+            "underdog, underdog, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|b9036900ce6fd27ce3095db6c5481f29|h2h|Toronto Maple Leafs",
+          "title": "Nashville Predators @ Toronto Maple Leafs",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Toronto Maple Leafs",
+          "odds": 112,
+          "fair": 0.5355,
+          "edge": 6.38,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 112 at 1xBet (implied 47.2%)",
+            "Consensus no-vig 53.5% across 27 books",
+            "underdog, pickem, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|2c216d3aae0eeb236312763bf1ca61db|h2h|Detroit Red Wings",
+          "title": "Ottawa Senators @ Detroit Red Wings",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Detroit Red Wings",
+          "odds": 160,
+          "fair": 0.4469,
+          "edge": 6.23,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 160 at LeoVegas (SE) (implied 38.5%)",
+            "Consensus no-vig 44.7% across 26 books",
+            "underdog, underdog, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|icehockey_nhl|9f6db651fe2d7363616cc72625c4972d|h2h|Philadelphia Flyers",
+          "title": "Philadelphia Flyers @ Ottawa Senators",
+          "sport": "NHL",
+          "market": "Moneyline",
+          "side": "Philadelphia Flyers",
+          "odds": 176,
+          "fair": 0.4097,
+          "edge": 4.74,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 176 at 1xBet (implied 36.2%)",
+            "Consensus no-vig 41.0% across 10 books",
+            "underdog, underdog, edge 4%+"
+          ]
+        },
+        {
+          "id": "2026-10-06|basketball_nba|af2f084075391e55ba2a596e7846bb40|h2h|Dallas Mavericks",
+          "title": "Dallas Mavericks @ Houston Rockets",
+          "sport": "NBA",
+          "market": "Moneyline",
+          "side": "Dallas Mavericks",
+          "odds": 324,
+          "fair": 0.2716,
+          "edge": 3.57,
+          "confidence": "High",
+          "units": 1,
+          "notes": [
+            "Best price 324 at 1xBet (implied 23.6%)",
+            "Consensus no-vig 27.2% across 22 books",
+            "underdog, long_shot, edge 2-4%"
+          ]
+        },
+        {
+          "id": "2026-10-06|basketball_nba|164cc0396837d5ff433215ffd3279283|h2h|Milwaukee Bucks",
+          "title": "Milwaukee Bucks @ Washington Wizards",
+          "sport": "NBA",
+          "market": "Moneyline",
+          "side": "Milwaukee Bucks",
+          "odds": 200,
+          "fair": 0.3486,
+          "edge": 1.53,
+          "confidence": "Medium",
+          "units": 1,
+          "notes": [
+            "Best price 200 at Unibet (NL) (implied 33.3%)",
+            "Consensus no-vig 34.9% across 22 books",
+            "underdog, underdog, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|basketball_nba|47cc511bb5ce50f715e3625ce5ef77ee|h2h|Brooklyn Nets",
+          "title": "Charlotte Hornets @ Brooklyn Nets",
+          "sport": "NBA",
+          "market": "Moneyline",
+          "side": "Brooklyn Nets",
+          "odds": 140,
+          "fair": 0.4298,
+          "edge": 1.32,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 140 at BetMGM (implied 41.7%)",
+            "Consensus no-vig 43.0% across 22 books",
+            "underdog, underdog, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|basketball_nba|2b042ddad3d3c6c6fe5b7005dc26c775|h2h|Philadelphia 76ers",
+          "title": "Philadelphia 76ers @ New York Knicks",
+          "sport": "NBA",
+          "market": "Moneyline",
+          "side": "Philadelphia 76ers",
+          "odds": 178,
+          "fair": 0.3716,
+          "edge": 1.18,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 178 at Pinnacle (implied 36.0%)",
+            "Consensus no-vig 37.2% across 21 books",
+            "underdog, underdog, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|soccer_epl|b870dcfba5e5920d3f1551a3aa1ea435|h2h|Leeds United",
+          "title": "Leeds United @ Arsenal",
+          "sport": "Soccer",
+          "market": "Moneyline",
+          "side": "Leeds United",
+          "odds": 820,
+          "fair": 0.1191,
+          "edge": 1.04,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 820 at Betfair (implied 10.9%)",
+            "Consensus no-vig 11.9% across 29 books",
+            "underdog, long_shot, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|soccer_epl|bf2142d1ca76ba2fc9e61afce80f86c0|h2h|Draw",
+          "title": "Ipswich Town @ Manchester City",
+          "sport": "Soccer",
+          "market": "Moneyline",
+          "side": "Draw",
+          "odds": 650,
+          "fair": 0.1435,
+          "edge": 1.01,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 650 at Tipico (implied 13.3%)",
+            "Consensus no-vig 14.3% across 20 books",
+            "underdog, long_shot, edge 1-2%"
+          ]
+        },
+        {
+          "id": "2026-10-06|mma_mixed_martial_arts|a76e5fe6c1ea7ed1398b624857d980fc|h2h|Diego Lopes",
+          "title": "Diego Lopes @ Charles Oliveira",
+          "sport": "UFC",
+          "market": "Moneyline",
+          "side": "Diego Lopes",
+          "odds": 140,
+          "fair": 0.4258,
+          "edge": 0.91,
+          "confidence": "Low",
+          "units": 0.5,
+          "notes": [
+            "Best price 140 at DraftKings (implied 41.7%)",
+            "Consensus no-vig 42.6% across 6 books",
+            "underdog, underdog, edge 0.5-1%"
+          ]
+        }
+      ]
     }
   ]
 }
