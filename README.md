@@ -31,6 +31,25 @@ npm run dev
 - POST /api/simulate
 - POST /api/tickets/:name/resolve
 
+## Daily picks, tracking and learning
+
+Outputs are not guaranteed, and parlays are high variance. A 25-leg ticket almost never hits.
+
+- `scripts/generate-picks.mjs` posts **25 legs/day across NFL, NBA, MLB, NHL, EPL and UFC**. Edge is
+  `consensus no-vig probability (Pinnacle x3) - implied probability at the best available price`
+  (line-shopping value, not proof of positive EV). It only runs in the **12:00-8:00 AM ET** window and once per ET date;
+  `.github/workflows/daily-picks.yml` schedules several UTC crons to cover EDT/EST. If fewer than 25 legs qualify, it
+  writes `data/status.json` with the reason and fails the job.
+- `data/picks-log.jsonl` (append-only) stores every pick; `data/results.jsonl` stores grades (win/loss/push, scores,
+  resolution time) and closing lines/CLV. `data/report.json` holds segment stats (sport, market, favorite/underdog, odds bucket,
+  edge band), calibration buckets, loss causes, and win/lose conditions.
+- `scripts/grade-picks.mjs` (also run every 3 hours by `grade-picks.yml`) grades from The Odds API scores endpoint
+  (needs a plan that includes it; 3-day lookback) and captures closing lines before start.
+- Learning: a segment needs 50+ graded results and a Wilson interval excluding the price-implied rate before it is flagged.
+  Losing segments are cut from future slates, winning ones get a 1.25x score; otherwise selection stays neutral.
+
+Run locally: `ODDS_API_KEY=... node scripts/generate-picks.mjs --force` and `node scripts/grade-picks.mjs`.
+
 ## Daily Ticket Engine
 
 The engine line-shops the configured bookmakers, de-vigs each equivalent market,

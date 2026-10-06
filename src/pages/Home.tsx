@@ -7,6 +7,9 @@ import Stat from '../components/Stat'
 import { SkeletonCards } from '../components/Skeleton'
 import { getLedgerSummary } from '../engine/ledger'
 import { MIN_PROBABILITY, useSlate } from '../lib/slate'
+import dailyPicks from '../generated/picks.json'
+import trackingReport from '../../data/report.json'
+import { dailyStatus } from '../lib/dailyStatus'
 import { percent, probability, signedPercent, oneInN } from '../lib/format'
 
 export default function Home() {
@@ -18,6 +21,7 @@ export default function Home() {
     null,
   )
   const loading = slate.status === 'loading'
+  const daily = dailyStatus(dailyPicks, trackingReport)
   const sourceLabel = slate.source === 'live' ? 'Live odds' : 'Demo data'
 
   return (
@@ -82,6 +86,24 @@ export default function Home() {
           </p>
         </Card>
 
+        <Card title="Daily 25-leg slate">
+          <dl className="kv">
+            <dt>Status</dt>
+            <dd>{daily.state === 'live' ? 'Live' : daily.state === 'stale' ? 'Stale' : 'Sample (no generated picks yet)'}</dd>
+            <dt>Legs</dt>
+            <dd className="num">{daily.legs}</dd>
+            <dt>Generated</dt>
+            <dd>{daily.generatedAt ?? '—'}</dd>
+            <dt>Graded / pending</dt>
+            <dd className="num">{daily.graded} / {daily.pending}</dd>
+          </dl>
+          {daily.state === 'stale' && (
+            <p className="tone-warning" style={{ marginTop: 'var(--sp-3)' }}>The last daily run is more than 36 hours old; check the daily-picks workflow.</p>
+          )}
+          <p className="muted" style={{ marginTop: 'var(--sp-3)', fontSize: 12 }}>
+            Outputs are not guaranteed. Parlays are high variance; 25-leg tickets almost never hit.
+          </p>
+        </Card>
         <Card title="Data source">
           <dl className="kv">
             <dt>Status</dt>
