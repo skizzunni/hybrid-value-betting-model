@@ -1,14 +1,181 @@
 {
-  "generated_at": "2026-10-07T00:44:50.293Z",
+  "generated_at": "2026-10-07T10:19:18.774Z",
   "min_segment_sample": 50,
   "total_picks": 25,
-  "graded": 0,
-  "pending": 25,
-  "overall": null,
+  "graded": 9,
+  "pending": 16,
+  "overall": {
+    "key": "sport:ALL",
+    "n": 9,
+    "wins": 7,
+    "losses": 2,
+    "pushes": 0,
+    "hit_rate": 0.7778,
+    "hit_rate_ci": [
+      0.4526,
+      0.9368
+    ],
+    "avg_implied_prob": 0.4058,
+    "avg_model_prob": 0.4718,
+    "roi": 0.9189,
+    "profit_units": 8.27,
+    "brier": 0.2566,
+    "avg_clv": 0.0701
+  },
   "win_conditions": [],
   "lose_conditions": [],
-  "loss_causes": {},
-  "reliability": [],
-  "segments": [],
-  "note": "Only 0 graded picks; no segment is flagged until it has 50+ results."
+  "loss_causes": {
+    "won": 7,
+    "good_price_variance": 1,
+    "variance_or_unknown": 1
+  },
+  "reliability": [
+    {
+      "bucket": "0.3-0.4",
+      "n": 1,
+      "predicted": 0.3994,
+      "observed": 1
+    },
+    {
+      "bucket": "0.4-0.5",
+      "n": 5,
+      "predicted": 0.4447,
+      "observed": 0.6
+    },
+    {
+      "bucket": "0.5-0.6",
+      "n": 3,
+      "predicted": 0.541,
+      "observed": 1
+    }
+  ],
+  "segments": [
+    {
+      "key": "edge:4%+",
+      "n": 9,
+      "wins": 7,
+      "losses": 2,
+      "pushes": 0,
+      "hit_rate": 0.7778,
+      "hit_rate_ci": [
+        0.4526,
+        0.9368
+      ],
+      "avg_implied_prob": 0.4058,
+      "avg_model_prob": 0.4718,
+      "roi": 0.9189,
+      "profit_units": 8.27,
+      "brier": 0.2566,
+      "avg_clv": 0.0701
+    },
+    {
+      "key": "market:h2h",
+      "n": 9,
+      "wins": 7,
+      "losses": 2,
+      "pushes": 0,
+      "hit_rate": 0.7778,
+      "hit_rate_ci": [
+        0.4526,
+        0.9368
+      ],
+      "avg_implied_prob": 0.4058,
+      "avg_model_prob": 0.4718,
+      "roi": 0.9189,
+      "profit_units": 8.27,
+      "brier": 0.2566,
+      "avg_clv": 0.0701
+    },
+    {
+      "key": "odds:pickem",
+      "n": 3,
+      "wins": 3,
+      "losses": 0,
+      "pushes": 0,
+      "hit_rate": 1,
+      "hit_rate_ci": [
+        0.4385,
+        1
+      ],
+      "avg_implied_prob": 0.475,
+      "avg_model_prob": 0.541,
+      "roi": 1.1067,
+      "profit_units": 3.32,
+      "brier": 0.2109,
+      "avg_clv": 0.0598
+    },
+    {
+      "key": "odds:underdog",
+      "n": 6,
+      "wins": 4,
+      "losses": 2,
+      "pushes": 0,
+      "hit_rate": 0.6667,
+      "hit_rate_ci": [
+        0.3,
+        0.9032
+      ],
+      "avg_implied_prob": 0.3712,
+      "avg_model_prob": 0.4372,
+      "roi": 0.825,
+      "profit_units": 4.95,
+      "brier": 0.2795,
+      "avg_clv": 0.0803
+    },
+    {
+      "key": "role:underdog",
+      "n": 9,
+      "wins": 7,
+      "losses": 2,
+      "pushes": 0,
+      "hit_rate": 0.7778,
+      "hit_rate_ci": [
+        0.4526,
+        0.9368
+      ],
+      "avg_implied_prob": 0.4058,
+      "avg_model_prob": 0.4718,
+      "roi": 0.9189,
+      "profit_units": 8.27,
+      "brier": 0.2566,
+      "avg_clv": 0.0701
+    },
+    {
+      "key": "sport:NHL",
+      "n": 9,
+      "wins": 7,
+      "losses": 2,
+      "pushes": 0,
+      "hit_rate": 0.7778,
+      "hit_rate_ci": [
+        0.4526,
+        0.9368
+      ],
+      "avg_implied_prob": 0.4058,
+      "avg_model_prob": 0.4718,
+      "roi": 0.9189,
+      "profit_units": 8.27,
+      "brier": 0.2566,
+      "avg_clv": 0.0701
+    },
+    {
+      "key": "sport+role:NHL/underdog",
+      "n": 9,
+      "wins": 7,
+      "losses": 2,
+      "pushes": 0,
+      "hit_rate": 0.7778,
+      "hit_rate_ci": [
+        0.4526,
+        0.9368
+      ],
+      "avg_implied_prob": 0.4058,
+      "avg_model_prob": 0.4718,
+      "roi": 0.9189,
+      "profit_units": 8.27,
+      "brier": 0.2566,
+      "avg_clv": 0.0701
+    }
+  ],
+  "note": "Only 9 graded picks; no segment is flagged until it has 50+ results."
 }
