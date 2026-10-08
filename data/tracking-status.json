@@ -2,10 +2,10 @@
   "counts": {
     "by_sport": {
       "MLB": {
-        "resolved": 3,
+        "resolved": 4,
         "stale": 0,
         "tracked": 4,
-        "unresolved": 1
+        "unresolved": 0
       },
       "NBA": {
         "resolved": 0,
@@ -43,10 +43,10 @@
       "total": 25
     },
     "overall": {
-      "resolved": 13,
+      "resolved": 14,
       "stale": 0,
       "tracked": 134,
-      "unresolved": 121
+      "unresolved": 120
     }
   },
   "data_mode": "live",
@@ -55,7 +55,7 @@
       "message": "1 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-08T02:44:47.100Z",
+  "generated_at": "2026-10-08T11:23:39.240Z",
   "last_evening_results_run": {
     "at": "2026-10-08T02:44:47.100Z",
     "et_date": "2026-10-07",
@@ -70,8 +70,8 @@
     "passed_games": 3
   },
   "last_results_run": {
-    "at": "2026-10-07T11:05:49.377Z",
-    "et_date": "2026-10-07",
+    "at": "2026-10-08T11:23:39.240Z",
+    "et_date": "2026-10-08",
     "ok": false
   },
   "last_successful_pick_run": "2026-10-06T11:17:45.687Z",
