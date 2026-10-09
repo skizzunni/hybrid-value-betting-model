@@ -33,7 +33,7 @@
       },
       "UFC": {
         "resolved": 0,
-        "stale": 0,
+        "stale": 1,
         "tracked": 36,
         "unresolved": 36
       }
@@ -44,7 +44,7 @@
     },
     "overall": {
       "resolved": 14,
-      "stale": 0,
+      "stale": 1,
       "tracked": 134,
       "unresolved": 120
     }
@@ -52,13 +52,13 @@
   "data_mode": "live",
   "errors": [
     {
-      "message": "1 game(s) still unresolved >8h after start"
+      "message": "scores failed for UFC (odds-api): scores mma_mixed_martial_arts failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | 1 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-08T11:23:39.240Z",
+  "generated_at": "2026-10-09T02:59:06.514Z",
   "last_evening_results_run": {
-    "at": "2026-10-08T02:44:47.100Z",
-    "et_date": "2026-10-07",
+    "at": "2026-10-09T02:59:06.514Z",
+    "et_date": "2026-10-08",
     "ok": false
   },
   "last_pick_run": {
