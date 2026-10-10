@@ -55,7 +55,7 @@
       "message": "scores failed for NFL (odds-api): scores americanfootball_nfl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NFL (espn): ESPN NFL 20261008-20261010 failed: 400 Bad Request | scores failed for NHL (odds-api): scores icehockey_nhl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NHL (espn): ESPN NHL 20261007-20261010 failed: 400 Bad Request | 4 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-10T02:26:05.061Z",
+  "generated_at": "2026-10-10T10:37:41.770Z",
   "last_evening_results_run": {
     "at": "2026-10-10T02:26:05.061Z",
     "et_date": "2026-10-09",
@@ -70,8 +70,8 @@
     "passed_games": 3
   },
   "last_results_run": {
-    "at": "2026-10-09T11:20:39.350Z",
-    "et_date": "2026-10-09",
+    "at": "2026-10-10T10:37:41.770Z",
+    "et_date": "2026-10-10",
     "ok": false
   },
   "last_successful_pick_run": "2026-10-06T11:17:45.687Z",
