@@ -15,13 +15,13 @@
       },
       "NFL": {
         "resolved": 0,
-        "stale": 0,
+        "stale": 1,
         "tracked": 15,
         "unresolved": 15
       },
       "NHL": {
         "resolved": 10,
-        "stale": 0,
+        "stale": 2,
         "tracked": 13,
         "unresolved": 3
       },
@@ -44,7 +44,7 @@
     },
     "overall": {
       "resolved": 14,
-      "stale": 1,
+      "stale": 4,
       "tracked": 134,
       "unresolved": 120
     }
@@ -52,13 +52,13 @@
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NFL (odds-api): scores americanfootball_nfl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NFL (espn): ESPN NFL 20261008-20261010 failed: 400 Bad Request | scores failed for NHL (odds-api): scores icehockey_nhl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NHL (espn): ESPN NHL 20261007-20261010 failed: 400 Bad Request | 4 game(s) still unresolved >8h after start"
+      "message": "scores failed for NFL (odds-api): scores americanfootball_nfl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NFL (espn): ESPN NFL 20261008-20261010 failed: 400 Bad Request | scores failed for NHL (odds-api): scores icehockey_nhl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NHL (espn): ESPN NHL 20261007-20261011 failed: 400 Bad Request | scores failed for Soccer (odds-api): scores soccer_epl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for Soccer (espn): ESPN Soccer 20261009-20261011 failed: 400 Bad Request | scores failed for UFC (odds-api): scores mma_mixed_martial_arts failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | 10 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-10T10:37:41.770Z",
+  "generated_at": "2026-10-11T01:59:36.337Z",
   "last_evening_results_run": {
-    "at": "2026-10-10T02:26:05.061Z",
-    "et_date": "2026-10-09",
+    "at": "2026-10-11T01:59:36.337Z",
+    "et_date": "2026-10-10",
     "ok": false
   },
   "last_pick_run": {

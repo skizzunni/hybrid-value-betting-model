@@ -18,14 +18,14 @@
       "NFL": {
         "pct_resolved": 0,
         "resolved": 0,
-        "stale": 0,
+        "stale": 1,
         "tracked": 15,
         "unresolved": 15
       },
       "NHL": {
         "pct_resolved": 0.7692,
         "resolved": 10,
-        "stale": 0,
+        "stale": 2,
         "tracked": 13,
         "unresolved": 3
       },
@@ -47,7 +47,7 @@
     "overall": {
       "pct_resolved": 0.1045,
       "resolved": 14,
-      "stale": 1,
+      "stale": 4,
       "tracked": 134,
       "unresolved": 120
     }
@@ -140,7 +140,7 @@
       }
     }
   },
-  "generated_at": "2026-10-10T10:37:41.770Z",
+  "generated_at": "2026-10-11T01:59:36.337Z",
   "min_sample": 50,
   "picks": {
     "clv": {
