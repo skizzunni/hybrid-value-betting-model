@@ -25,21 +25,21 @@
       "NHL": {
         "pct_resolved": 0.7692,
         "resolved": 10,
-        "stale": 2,
+        "stale": 3,
         "tracked": 13,
         "unresolved": 3
       },
       "Soccer": {
         "pct_resolved": 0,
         "resolved": 0,
-        "stale": 0,
+        "stale": 6,
         "tracked": 20,
         "unresolved": 20
       },
       "UFC": {
         "pct_resolved": 0,
         "resolved": 0,
-        "stale": 1,
+        "stale": 13,
         "tracked": 36,
         "unresolved": 36
       }
@@ -47,7 +47,7 @@
     "overall": {
       "pct_resolved": 0.1045,
       "resolved": 14,
-      "stale": 4,
+      "stale": 23,
       "tracked": 134,
       "unresolved": 120
     }
@@ -140,7 +140,7 @@
       }
     }
   },
-  "generated_at": "2026-10-12T02:29:50.615Z",
+  "generated_at": "2026-10-13T03:39:08.851Z",
   "min_sample": 50,
   "picks": {
     "clv": {
