@@ -18,7 +18,7 @@
       "NFL": {
         "pct_resolved": 0,
         "resolved": 0,
-        "stale": 14,
+        "stale": 15,
         "tracked": 15,
         "unresolved": 15
       },
@@ -32,7 +32,7 @@
       "Soccer": {
         "pct_resolved": 0,
         "resolved": 0,
-        "stale": 9,
+        "stale": 10,
         "tracked": 20,
         "unresolved": 20
       },
@@ -47,7 +47,7 @@
     "overall": {
       "pct_resolved": 0.1119,
       "resolved": 15,
-      "stale": 38,
+      "stale": 40,
       "tracked": 134,
       "unresolved": 119
     }
@@ -140,7 +140,7 @@
       }
     }
   },
-  "generated_at": "2026-10-14T09:32:25.188Z",
+  "generated_at": "2026-10-15T01:34:21.430Z",
   "min_sample": 50,
   "picks": {
     "clv": {
