@@ -14,16 +14,16 @@
         "unresolved": 46
       },
       "NFL": {
-        "resolved": 0,
-        "stale": 15,
+        "resolved": 1,
+        "stale": 14,
         "tracked": 15,
-        "unresolved": 15
+        "unresolved": 14
       },
       "NHL": {
-        "resolved": 10,
-        "stale": 3,
+        "resolved": 12,
+        "stale": 1,
         "tracked": 13,
-        "unresolved": 3
+        "unresolved": 1
       },
       "Soccer": {
         "resolved": 0,
@@ -39,26 +39,26 @@
       }
     },
     "legs": {
-      "pending": 16,
+      "pending": 14,
       "total": 25
     },
     "overall": {
-      "resolved": 15,
-      "stale": 40,
+      "resolved": 18,
+      "stale": 37,
       "tracked": 134,
-      "unresolved": 119
+      "unresolved": 116
     }
   },
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NFL (odds-api): scores americanfootball_nfl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NFL (espn): ESPN NFL 20261008-20261014 failed: 400 Bad Request | scores failed for NHL (espn): ESPN NHL 20261007-20261011 failed: 400 Bad Request | scores failed for Soccer (odds-api): scores soccer_epl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for Soccer (espn): ESPN Soccer 20261009-20261013 failed: 400 Bad Request | 40 game(s) still unresolved >8h after start"
+      "message": "scores failed for NFL (espn): ESPN NFL 20261008-20261014 failed: 400 Bad Request | scores failed for NHL (espn): ESPN NHL 20261007-20261011 failed: 400 Bad Request | scores failed for Soccer (espn): ESPN Soccer 20261009-20261013 failed: 400 Bad Request | 37 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-15T09:09:54.800Z",
+  "generated_at": "2026-10-16T01:30:01.645Z",
   "last_evening_results_run": {
-    "at": "2026-10-15T01:34:21.430Z",
-    "et_date": "2026-10-14",
+    "at": "2026-10-16T01:30:01.645Z",
+    "et_date": "2026-10-15",
     "ok": false
   },
   "last_pick_run": {
