@@ -55,10 +55,10 @@
       "message": "scores failed for NFL (espn): ESPN NFL 20261010-20261014 failed: 400 Bad Request | scores failed for NHL (espn): ESPN NHL 20261009-20261011 failed: 400 Bad Request | scores failed for Soccer (espn): ESPN Soccer 20261009-20261013 failed: 400 Bad Request | 37 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-16T09:02:48.651Z",
+  "generated_at": "2026-10-17T01:22:16.226Z",
   "last_evening_results_run": {
-    "at": "2026-10-16T01:30:01.645Z",
-    "et_date": "2026-10-15",
+    "at": "2026-10-17T01:22:16.226Z",
+    "et_date": "2026-10-16",
     "ok": false
   },
   "last_pick_run": {
