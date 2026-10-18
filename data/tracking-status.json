@@ -52,10 +52,10 @@
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NFL (espn): ESPN NFL 20261010-20261014 failed: 400 Bad Request | scores failed for Soccer (odds-api): scores soccer_epl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for Soccer (espn): ESPN Soccer 20261009-20261018 failed: 400 Bad Request | 23 game(s) still unresolved >8h after start"
+      "message": "scores failed for NFL (espn): ESPN NFL 20261010-20261014 failed: 400 Bad Request | scores failed for Soccer (odds-api): scores soccer_epl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for Soccer (espn): ESPN Soccer 20261010-20261018 failed: 400 Bad Request | 23 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-18T01:12:30.047Z",
+  "generated_at": "2026-10-18T08:52:05.846Z",
   "last_evening_results_run": {
     "at": "2026-10-18T01:12:30.047Z",
     "et_date": "2026-10-17",
@@ -70,8 +70,8 @@
     "passed_games": 3
   },
   "last_results_run": {
-    "at": "2026-10-17T08:35:12.920Z",
-    "et_date": "2026-10-17",
+    "at": "2026-10-18T08:52:05.846Z",
+    "et_date": "2026-10-18",
     "ok": false
   },
   "last_successful_pick_run": "2026-10-06T11:17:45.687Z",
