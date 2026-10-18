@@ -20,45 +20,45 @@
         "unresolved": 14
       },
       "NHL": {
-        "resolved": 12,
-        "stale": 1,
+        "resolved": 13,
+        "stale": 0,
         "tracked": 13,
-        "unresolved": 1
+        "unresolved": 0
       },
       "Soccer": {
-        "resolved": 0,
-        "stale": 10,
+        "resolved": 6,
+        "stale": 4,
         "tracked": 20,
-        "unresolved": 20
+        "unresolved": 14
       },
       "UFC": {
-        "resolved": 1,
-        "stale": 12,
+        "resolved": 13,
+        "stale": 0,
         "tracked": 36,
-        "unresolved": 35
+        "unresolved": 23
       }
     },
     "legs": {
-      "pending": 14,
+      "pending": 10,
       "total": 25
     },
     "overall": {
-      "resolved": 18,
-      "stale": 37,
+      "resolved": 37,
+      "stale": 18,
       "tracked": 134,
-      "unresolved": 116
+      "unresolved": 97
     }
   },
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NFL (espn): ESPN NFL 20261010-20261014 failed: 400 Bad Request | scores failed for NHL (espn): ESPN NHL 20261009-20261011 failed: 400 Bad Request | scores failed for Soccer (espn): ESPN Soccer 20261009-20261013 failed: 400 Bad Request | 37 game(s) still unresolved >8h after start"
+      "message": "scores failed for NFL (espn): ESPN NFL 20261010-20261014 failed: 400 Bad Request | scores failed for Soccer (odds-api): scores soccer_epl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for Soccer (espn): ESPN Soccer 20261009-20261018 failed: 400 Bad Request | 23 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-17T08:35:12.920Z",
+  "generated_at": "2026-10-18T01:12:30.047Z",
   "last_evening_results_run": {
-    "at": "2026-10-17T01:22:16.226Z",
-    "et_date": "2026-10-16",
+    "at": "2026-10-18T01:12:30.047Z",
+    "et_date": "2026-10-17",
     "ok": false
   },
   "last_pick_run": {
