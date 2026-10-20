@@ -14,10 +14,10 @@
         "unresolved": 46
       },
       "NFL": {
-        "resolved": 14,
-        "stale": 1,
+        "resolved": 15,
+        "stale": 0,
         "tracked": 15,
-        "unresolved": 1
+        "unresolved": 0
       },
       "NHL": {
         "resolved": 13,
@@ -26,10 +26,10 @@
         "unresolved": 0
       },
       "Soccer": {
-        "resolved": 9,
-        "stale": 1,
+        "resolved": 10,
+        "stale": 5,
         "tracked": 20,
-        "unresolved": 11
+        "unresolved": 10
       },
       "UFC": {
         "resolved": 13,
@@ -43,22 +43,22 @@
       "total": 25
     },
     "overall": {
-      "resolved": 53,
-      "stale": 2,
+      "resolved": 55,
+      "stale": 5,
       "tracked": 134,
-      "unresolved": 81
+      "unresolved": 79
     }
   },
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NFL (espn): ESPN NFL 20261012-20261014 failed: 400 Bad Request | scores failed for Soccer (odds-api): scores soccer_epl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for Soccer (espn): ESPN Soccer 20261011-20261019 failed: 400 Bad Request | 11 game(s) still unresolved >8h after start"
+      "message": "scores failed for Soccer (odds-api): scores soccer_epl failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for Soccer (espn): ESPN Soccer 20261011-20261020 failed: 400 Bad Request | 9 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-19T09:56:06.576Z",
+  "generated_at": "2026-10-20T01:55:20.743Z",
   "last_evening_results_run": {
-    "at": "2026-10-19T01:23:38.216Z",
-    "et_date": "2026-10-18",
+    "at": "2026-10-20T01:55:20.743Z",
+    "et_date": "2026-10-19",
     "ok": false
   },
   "last_pick_run": {
