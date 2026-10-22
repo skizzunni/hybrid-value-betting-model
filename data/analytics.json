@@ -32,7 +32,7 @@
       "Soccer": {
         "pct_resolved": 0.5,
         "resolved": 10,
-        "stale": 9,
+        "stale": 10,
         "tracked": 20,
         "unresolved": 10
       },
@@ -47,7 +47,7 @@
     "overall": {
       "pct_resolved": 0.4104,
       "resolved": 55,
-      "stale": 9,
+      "stale": 10,
       "tracked": 134,
       "unresolved": 79
     }
@@ -140,7 +140,7 @@
       }
     }
   },
-  "generated_at": "2026-10-21T09:22:56.487Z",
+  "generated_at": "2026-10-22T01:37:19.390Z",
   "min_sample": 50,
   "picks": {
     "clv": {
