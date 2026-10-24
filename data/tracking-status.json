@@ -9,7 +9,7 @@
       },
       "NBA": {
         "resolved": 0,
-        "stale": 11,
+        "stale": 14,
         "tracked": 46,
         "unresolved": 46
       },
@@ -44,7 +44,7 @@
     },
     "overall": {
       "resolved": 55,
-      "stale": 21,
+      "stale": 24,
       "tracked": 134,
       "unresolved": 79
     }
@@ -52,10 +52,10 @@
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NBA (odds-api): scores basketball_nba failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NBA (espn): ESPN NBA 20261019-20261025 failed: 400 Bad Request | scores failed for Soccer (espn): ESPN Soccer 20261016-20261020 failed: 400 Bad Request | 26 game(s) still unresolved >8h after start"
+      "message": "scores failed for NBA (odds-api): scores basketball_nba failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NBA (espn): ESPN NBA 20261019-20261025 failed: 400 Bad Request | scores failed for Soccer (espn): ESPN Soccer 20261016-20261020 failed: 400 Bad Request | 27 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-24T01:42:33.639Z",
+  "generated_at": "2026-10-24T08:53:50.529Z",
   "last_evening_results_run": {
     "at": "2026-10-24T01:42:33.639Z",
     "et_date": "2026-10-23",
@@ -70,8 +70,8 @@
     "passed_games": 3
   },
   "last_results_run": {
-    "at": "2026-10-23T09:21:43.336Z",
-    "et_date": "2026-10-23",
+    "at": "2026-10-24T08:53:50.529Z",
+    "et_date": "2026-10-24",
     "ok": false
   },
   "last_successful_pick_run": "2026-10-06T11:17:45.687Z",
