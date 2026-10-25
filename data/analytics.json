@@ -11,7 +11,7 @@
       "NBA": {
         "pct_resolved": 0,
         "resolved": 0,
-        "stale": 15,
+        "stale": 16,
         "tracked": 46,
         "unresolved": 46
       },
@@ -47,7 +47,7 @@
     "overall": {
       "pct_resolved": 0.4478,
       "resolved": 60,
-      "stale": 20,
+      "stale": 21,
       "tracked": 134,
       "unresolved": 74
     }
@@ -140,7 +140,7 @@
       }
     }
   },
-  "generated_at": "2026-10-25T01:18:21.621Z",
+  "generated_at": "2026-10-25T09:10:14.976Z",
   "min_sample": 50,
   "picks": {
     "clv": {
