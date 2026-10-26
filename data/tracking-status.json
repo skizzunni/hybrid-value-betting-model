@@ -9,7 +9,7 @@
       },
       "NBA": {
         "resolved": 0,
-        "stale": 17,
+        "stale": 18,
         "tracked": 46,
         "unresolved": 46
       },
@@ -44,7 +44,7 @@
     },
     "overall": {
       "resolved": 64,
-      "stale": 18,
+      "stale": 19,
       "tracked": 134,
       "unresolved": 70
     }
@@ -52,10 +52,10 @@
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NBA (odds-api): scores basketball_nba failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NBA (espn): ESPN NBA 20261019-20261025 failed: 400 Bad Request | scores failed for Soccer (espn): ESPN Soccer 20261017-20261020 failed: 400 Bad Request | scores failed for UFC (odds-api): scores mma_mixed_martial_arts failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | 21 game(s) still unresolved >8h after start"
+      "message": "scores failed for NBA (odds-api): scores basketball_nba failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NBA (espn): ESPN NBA 20261019-20261025 failed: 400 Bad Request | scores failed for Soccer (espn): ESPN Soccer 20261018-20261020 failed: 400 Bad Request | scores failed for UFC (odds-api): scores mma_mixed_martial_arts failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | 21 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-26T01:21:15.779Z",
+  "generated_at": "2026-10-26T10:09:41.854Z",
   "last_evening_results_run": {
     "at": "2026-10-26T01:21:15.779Z",
     "et_date": "2026-10-25",
@@ -70,8 +70,8 @@
     "passed_games": 3
   },
   "last_results_run": {
-    "at": "2026-10-25T09:10:14.976Z",
-    "et_date": "2026-10-25",
+    "at": "2026-10-26T10:09:41.854Z",
+    "et_date": "2026-10-26",
     "ok": false
   },
   "last_successful_pick_run": "2026-10-06T11:17:45.687Z",
