@@ -30,11 +30,11 @@
         "unresolved": 0
       },
       "Soccer": {
-        "pct_resolved": 0.95,
-        "resolved": 19,
-        "stale": 1,
+        "pct_resolved": 1,
+        "resolved": 20,
+        "stale": 0,
         "tracked": 20,
-        "unresolved": 1
+        "unresolved": 0
       },
       "UFC": {
         "pct_resolved": 0.3611,
@@ -45,11 +45,11 @@
       }
     },
     "overall": {
-      "pct_resolved": 0.4776,
-      "resolved": 64,
-      "stale": 19,
+      "pct_resolved": 0.4851,
+      "resolved": 65,
+      "stale": 18,
       "tracked": 134,
-      "unresolved": 70
+      "unresolved": 69
     }
   },
   "disclaimer": "Tracking measures past performance; it does not guarantee future profit. Parlays are high variance and 25-leg tickets are entertainment.",
@@ -140,7 +140,7 @@
       }
     }
   },
-  "generated_at": "2026-10-26T10:09:41.854Z",
+  "generated_at": "2026-10-27T02:09:58.559Z",
   "min_sample": 50,
   "picks": {
     "clv": {
