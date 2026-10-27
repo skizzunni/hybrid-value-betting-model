@@ -39,7 +39,7 @@
       "UFC": {
         "pct_resolved": 0.3611,
         "resolved": 13,
-        "stale": 0,
+        "stale": 2,
         "tracked": 36,
         "unresolved": 23
       }
@@ -47,7 +47,7 @@
     "overall": {
       "pct_resolved": 0.4851,
       "resolved": 65,
-      "stale": 18,
+      "stale": 20,
       "tracked": 134,
       "unresolved": 69
     }
@@ -140,7 +140,7 @@
       }
     }
   },
-  "generated_at": "2026-10-27T02:09:58.559Z",
+  "generated_at": "2026-10-27T09:50:11.850Z",
   "min_sample": 50,
   "picks": {
     "clv": {
