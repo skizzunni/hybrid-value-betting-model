@@ -8,10 +8,10 @@
         "unresolved": 0
       },
       "NBA": {
-        "resolved": 0,
-        "stale": 18,
+        "resolved": 3,
+        "stale": 15,
         "tracked": 46,
-        "unresolved": 46
+        "unresolved": 43
       },
       "NFL": {
         "resolved": 15,
@@ -39,26 +39,26 @@
       }
     },
     "legs": {
-      "pending": 7,
+      "pending": 6,
       "total": 25
     },
     "overall": {
-      "resolved": 65,
-      "stale": 20,
+      "resolved": 68,
+      "stale": 17,
       "tracked": 134,
-      "unresolved": 69
+      "unresolved": 66
     }
   },
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NBA (espn): ESPN NBA 20261019-20261025 failed: 400 Bad Request | scores failed for UFC (odds-api): scores mma_mixed_martial_arts failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | 20 game(s) still unresolved >8h after start"
+      "message": "scores failed for NBA (espn): ESPN NBA 20261019-20261025 failed: 400 Bad Request | scores failed for UFC (odds-api): scores mma_mixed_martial_arts failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | 17 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-27T09:50:11.850Z",
+  "generated_at": "2026-10-28T02:24:39.655Z",
   "last_evening_results_run": {
-    "at": "2026-10-27T02:09:58.559Z",
-    "et_date": "2026-10-26",
+    "at": "2026-10-28T02:24:39.655Z",
+    "et_date": "2026-10-27",
     "ok": false
   },
   "last_pick_run": {
