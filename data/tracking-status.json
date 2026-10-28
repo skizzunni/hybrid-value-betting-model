@@ -52,10 +52,10 @@
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NBA (espn): ESPN NBA 20261019-20261025 failed: 400 Bad Request | scores failed for UFC (odds-api): scores mma_mixed_martial_arts failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | 17 game(s) still unresolved >8h after start"
+      "message": "scores failed for NBA (espn): ESPN NBA 20261020-20261025 failed: 400 Bad Request | 17 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-28T02:24:39.655Z",
+  "generated_at": "2026-10-28T10:36:24.906Z",
   "last_evening_results_run": {
     "at": "2026-10-28T02:24:39.655Z",
     "et_date": "2026-10-27",
@@ -70,8 +70,8 @@
     "passed_games": 3
   },
   "last_results_run": {
-    "at": "2026-10-27T09:50:11.850Z",
-    "et_date": "2026-10-27",
+    "at": "2026-10-28T10:36:24.906Z",
+    "et_date": "2026-10-28",
     "ok": false
   },
   "last_successful_pick_run": "2026-10-06T11:17:45.687Z",
