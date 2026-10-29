@@ -9,11 +9,11 @@
         "unresolved": 0
       },
       "NBA": {
-        "pct_resolved": 0.2826,
-        "resolved": 13,
-        "stale": 5,
+        "pct_resolved": 0.3043,
+        "resolved": 14,
+        "stale": 4,
         "tracked": 46,
-        "unresolved": 33
+        "unresolved": 32
       },
       "NFL": {
         "pct_resolved": 1,
@@ -45,11 +45,11 @@
       }
     },
     "overall": {
-      "pct_resolved": 0.5821,
-      "resolved": 78,
-      "stale": 7,
+      "pct_resolved": 0.5896,
+      "resolved": 79,
+      "stale": 6,
       "tracked": 134,
-      "unresolved": 56
+      "unresolved": 55
     }
   },
   "disclaimer": "Tracking measures past performance; it does not guarantee future profit. Parlays are high variance and 25-leg tickets are entertainment.",
@@ -140,18 +140,18 @@
       }
     }
   },
-  "generated_at": "2026-10-29T02:31:44.323Z",
+  "generated_at": "2026-10-29T10:54:27.876Z",
   "min_sample": 50,
   "picks": {
     "clv": {
-      "avg_clv_pct": 19.29,
+      "avg_clv_pct": 18.51,
       "beat_close_rate": 1,
       "lost_to_close": 0,
-      "n": 23
+      "n": 24
     },
     "hit_rate": 0.7778,
     "legs_graded": 9,
-    "legs_push_or_void": 14,
+    "legs_push_or_void": 15,
     "legs_total": 25,
     "linked_legs_missing_game": 0,
     "lose_conditions": [],
