@@ -8,10 +8,10 @@
         "unresolved": 0
       },
       "NBA": {
-        "resolved": 14,
-        "stale": 4,
+        "resolved": 16,
+        "stale": 2,
         "tracked": 46,
-        "unresolved": 32
+        "unresolved": 30
       },
       "NFL": {
         "resolved": 15,
@@ -43,22 +43,22 @@
       "total": 25
     },
     "overall": {
-      "resolved": 79,
-      "stale": 6,
+      "resolved": 81,
+      "stale": 4,
       "tracked": 134,
-      "unresolved": 55
+      "unresolved": 53
     }
   },
   "data_mode": "live",
   "errors": [
     {
-      "message": "scores failed for NBA (espn): ESPN NBA 20261021-20261025 failed: 400 Bad Request | 6 game(s) still unresolved >8h after start"
+      "message": "scores failed for NBA (espn): ESPN NBA 20261021-20261025 failed: 400 Bad Request | 4 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-29T10:54:27.876Z",
+  "generated_at": "2026-10-30T02:41:25.578Z",
   "last_evening_results_run": {
-    "at": "2026-10-29T02:31:44.323Z",
-    "et_date": "2026-10-28",
+    "at": "2026-10-30T02:41:25.578Z",
+    "et_date": "2026-10-29",
     "ok": false
   },
   "last_pick_run": {
