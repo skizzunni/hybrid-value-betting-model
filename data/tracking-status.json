@@ -52,10 +52,10 @@
   "data_mode": "live",
   "errors": [
     {
-      "message": "2 game(s) still unresolved >8h after start"
+      "message": "scores failed for NBA (odds-api): scores basketball_nba failed: 401 Unauthorized (quota/plan/auth problem: check ODDS_API_KEY and that the plan includes this endpoint) | scores failed for NBA (espn): ESPN NBA 20261029-20261101 failed: 400 Bad Request | 12 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-10-31T02:30:53.354Z",
+  "generated_at": "2026-10-31T10:24:18.483Z",
   "last_evening_results_run": {
     "at": "2026-10-31T02:30:53.354Z",
     "et_date": "2026-10-30",
@@ -70,8 +70,8 @@
     "passed_games": 3
   },
   "last_results_run": {
-    "at": "2026-10-30T10:53:10.048Z",
-    "et_date": "2026-10-30",
+    "at": "2026-10-31T10:24:18.483Z",
+    "et_date": "2026-10-31",
     "ok": false
   },
   "last_successful_pick_run": "2026-10-06T11:17:45.687Z",
