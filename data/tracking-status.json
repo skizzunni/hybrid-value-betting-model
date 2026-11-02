@@ -8,50 +8,50 @@
         "unresolved": 0
       },
       "NBA": {
-        "resolved": 30,
+        "resolved": 32,
         "stale": 0,
-        "tracked": 50,
-        "unresolved": 20
+        "tracked": 65,
+        "unresolved": 33
       },
       "NFL": {
-        "resolved": 26,
+        "resolved": 27,
         "stale": 0,
         "tracked": 43,
-        "unresolved": 17
+        "unresolved": 16
       },
       "NHL": {
-        "resolved": 17,
+        "resolved": 18,
         "stale": 0,
-        "tracked": 18,
-        "unresolved": 1
+        "tracked": 22,
+        "unresolved": 4
       },
       "Soccer": {
         "resolved": 21,
         "stale": 0,
-        "tracked": 33,
-        "unresolved": 12
+        "tracked": 42,
+        "unresolved": 21
       },
       "UFC": {
         "resolved": 15,
         "stale": 0,
-        "tracked": 65,
-        "unresolved": 50
+        "tracked": 73,
+        "unresolved": 58
       }
     },
     "legs": {
-      "pending": 17,
-      "total": 50
+      "pending": 40,
+      "total": 75
     },
     "overall": {
-      "resolved": 113,
+      "resolved": 117,
       "stale": 0,
-      "tracked": 213,
-      "unresolved": 100
+      "tracked": 249,
+      "unresolved": 132
     }
   },
   "data_mode": "live",
   "errors": [],
-  "generated_at": "2026-11-02T02:36:49.181Z",
+  "generated_at": "2026-11-02T12:27:24.654Z",
   "last_evening_results_run": {
     "at": "2026-11-02T02:36:49.181Z",
     "et_date": "2026-11-01",
@@ -61,22 +61,22 @@
     "resolved_games": 18
   },
   "last_pick_run": {
-    "at": "2026-11-01T11:17:18.763Z",
-    "et_date": "2026-11-01",
+    "at": "2026-11-02T12:27:24.654Z",
+    "et_date": "2026-11-02",
     "legs": 25,
     "new_legs": 25,
     "ok": true,
-    "passed_games": 11
+    "passed_games": 12
   },
   "last_results_run": {
-    "at": "2026-11-01T11:17:15.831Z",
-    "et_date": "2026-11-01",
-    "graded_legs": 0,
+    "at": "2026-11-02T12:27:20.708Z",
+    "et_date": "2026-11-02",
+    "graded_legs": 2,
     "ok": true,
-    "quota_remaining": null,
-    "resolved_games": 2
+    "quota_remaining": 434,
+    "resolved_games": 4
   },
-  "last_successful_pick_run": "2026-11-01T11:17:18.763Z",
-  "last_successful_results_run": "2026-11-02T02:36:49.181Z",
+  "last_successful_pick_run": "2026-11-02T12:27:24.654Z",
+  "last_successful_results_run": "2026-11-02T12:27:20.708Z",
   "schema": 1
 }
