@@ -1,108 +1,108 @@
 {
-  "generated_at": "2026-11-02T12:27:22.833Z",
+  "generated_at": "2026-11-03T11:56:57.757Z",
   "min_segment_sample": 50,
-  "total_picks": 50,
-  "graded": 20,
-  "pending": 30,
+  "total_picks": 75,
+  "graded": 29,
+  "pending": 46,
   "overall": {
     "key": "sport:ALL",
-    "n": 20,
-    "wins": 11,
-    "losses": 9,
+    "n": 29,
+    "wins": 15,
+    "losses": 14,
     "pushes": 0,
-    "hit_rate": 0.55,
+    "hit_rate": 0.5172,
     "hit_rate_ci": [
-      0.3421,
-      0.7418
+      0.3443,
+      0.6861
     ],
-    "avg_implied_prob": 0.3605,
-    "avg_model_prob": 0.4106,
-    "roi": 0.5252,
-    "profit_units": 9.45,
-    "brier": 0.2058,
+    "avg_implied_prob": 0.3453,
+    "avg_model_prob": 0.3903,
+    "roi": 0.4386,
+    "profit_units": 10.97,
+    "brier": 0.197,
     "avg_clv": 0.0701
   },
   "win_conditions": [],
   "lose_conditions": [],
   "loss_causes": {
-    "won": 11,
+    "won": 15,
     "good_price_variance": 1,
-    "variance_or_unknown": 2,
-    "correlated_sport_day": 6
+    "variance_or_unknown": 3,
+    "correlated_sport_day": 10
   },
   "reliability": [
     {
       "bucket": "0.1-0.2",
-      "n": 1,
-      "predicted": 0.1451,
+      "n": 4,
+      "predicted": 0.1467,
       "observed": 0
     },
     {
       "bucket": "0.2-0.3",
-      "n": 4,
-      "predicted": 0.261,
+      "n": 5,
+      "predicted": 0.2516,
       "observed": 0
     },
     {
       "bucket": "0.3-0.4",
-      "n": 3,
-      "predicted": 0.3779,
-      "observed": 0.6667
+      "n": 4,
+      "predicted": 0.3813,
+      "observed": 0.75
     },
     {
       "bucket": "0.4-0.5",
-      "n": 8,
-      "predicted": 0.4505,
-      "observed": 0.625
+      "n": 10,
+      "predicted": 0.4463,
+      "observed": 0.7
     },
     {
       "bucket": "0.5-0.6",
-      "n": 3,
-      "predicted": 0.541,
-      "observed": 1
+      "n": 4,
+      "predicted": 0.5483,
+      "observed": 0.75
     },
     {
       "bucket": "0.6-0.7",
-      "n": 1,
-      "predicted": 0.6628,
+      "n": 2,
+      "predicted": 0.6469,
       "observed": 1
     }
   ],
   "segments": [
     {
       "key": "edge:0.5-1%",
-      "n": 2,
+      "n": 4,
       "wins": 0,
-      "losses": 2,
+      "losses": 4,
       "pushes": 0,
       "hit_rate": 0,
       "hit_rate_ci": [
         0,
-        0.6576
+        0.4899
       ],
-      "avg_implied_prob": 0.3018,
-      "avg_model_prob": 0.3098,
+      "avg_implied_prob": 0.2291,
+      "avg_model_prob": 0.238,
       "roi": -1,
-      "profit_units": -1,
-      "brier": 0.0993,
+      "profit_units": -2,
+      "brier": 0.0646,
       "avg_clv": null
     },
     {
       "key": "edge:1-2%",
-      "n": 3,
-      "wins": 0,
-      "losses": 3,
+      "n": 6,
+      "wins": 1,
+      "losses": 5,
       "pushes": 0,
-      "hit_rate": 0,
+      "hit_rate": 0.1667,
       "hit_rate_ci": [
-        0,
-        0.5615
+        0.0301,
+        0.5635
       ],
-      "avg_implied_prob": 0.1971,
-      "avg_model_prob": 0.2128,
-      "roi": -1,
-      "profit_units": -2,
-      "brier": 0.049,
+      "avg_implied_prob": 0.2117,
+      "avg_model_prob": 0.2256,
+      "roi": -0.6725,
+      "profit_units": -2.69,
+      "brier": 0.0951,
       "avg_clv": null
     },
     {
@@ -125,147 +125,165 @@
     },
     {
       "key": "edge:4%+",
-      "n": 14,
-      "wins": 11,
-      "losses": 3,
+      "n": 18,
+      "wins": 14,
+      "losses": 4,
       "pushes": 0,
-      "hit_rate": 0.7857,
+      "hit_rate": 0.7778,
       "hit_rate_ci": [
-        0.5241,
-        0.9243
+        0.5478,
+        0.91
       ],
-      "avg_implied_prob": 0.4108,
-      "avg_model_prob": 0.4754,
-      "roi": 0.961,
-      "profit_units": 13.45,
-      "brier": 0.263,
+      "avg_implied_prob": 0.4201,
+      "avg_model_prob": 0.4843,
+      "roi": 0.9253,
+      "profit_units": 16.66,
+      "brier": 0.2664,
       "avg_clv": 0.0701
     },
     {
       "key": "market:h2h",
-      "n": 20,
-      "wins": 11,
-      "losses": 9,
+      "n": 29,
+      "wins": 15,
+      "losses": 14,
       "pushes": 0,
-      "hit_rate": 0.55,
+      "hit_rate": 0.5172,
       "hit_rate_ci": [
-        0.3421,
-        0.7418
+        0.3443,
+        0.6861
       ],
-      "avg_implied_prob": 0.3605,
-      "avg_model_prob": 0.4106,
-      "roi": 0.5252,
-      "profit_units": 9.45,
-      "brier": 0.2058,
+      "avg_implied_prob": 0.3453,
+      "avg_model_prob": 0.3903,
+      "roi": 0.4386,
+      "profit_units": 10.97,
+      "brier": 0.197,
       "avg_clv": 0.0701
     },
     {
       "key": "odds:favorite",
-      "n": 1,
-      "wins": 1,
+      "n": 2,
+      "wins": 2,
       "losses": 0,
       "pushes": 0,
       "hit_rate": 1,
       "hit_rate_ci": [
-        0.2065,
+        0.3424,
         1
       ],
-      "avg_implied_prob": 0.6047,
-      "avg_model_prob": 0.6628,
-      "roi": 0.6536,
-      "profit_units": 0.65,
-      "brier": 0.1137,
+      "avg_implied_prob": 0.5877,
+      "avg_model_prob": 0.6469,
+      "roi": 0.7027,
+      "profit_units": 1.41,
+      "brier": 0.1249,
       "avg_clv": null
     },
     {
       "key": "odds:long_shot",
-      "n": 5,
+      "n": 9,
       "wins": 0,
-      "losses": 5,
+      "losses": 9,
       "pushes": 0,
       "hit_rate": 0,
       "hit_rate_ci": [
         0,
-        0.4345
+        0.2992
       ],
-      "avg_implied_prob": 0.2199,
-      "avg_model_prob": 0.2378,
+      "avg_implied_prob": 0.19,
+      "avg_model_prob": 0.2049,
       "roi": -1,
-      "profit_units": -3.5,
-      "brier": 0.0599,
+      "profit_units": -6,
+      "brier": 0.0458,
       "avg_clv": null
     },
     {
       "key": "odds:pickem",
-      "n": 3,
+      "n": 4,
       "wins": 3,
-      "losses": 0,
+      "losses": 1,
       "pushes": 0,
-      "hit_rate": 1,
+      "hit_rate": 0.75,
       "hit_rate_ci": [
-        0.4385,
-        1
+        0.3006,
+        0.9544
       ],
-      "avg_implied_prob": 0.475,
-      "avg_model_prob": 0.541,
-      "roi": 1.1067,
-      "profit_units": 3.32,
-      "brier": 0.2109,
+      "avg_implied_prob": 0.4825,
+      "avg_model_prob": 0.5483,
+      "roi": 0.58,
+      "profit_units": 2.32,
+      "brier": 0.2395,
       "avg_clv": 0.0598
     },
     {
       "key": "odds:underdog",
-      "n": 11,
-      "wins": 7,
+      "n": 14,
+      "wins": 10,
       "losses": 4,
       "pushes": 0,
-      "hit_rate": 0.6364,
+      "hit_rate": 0.7143,
       "hit_rate_ci": [
-        0.3538,
-        0.8483
+        0.4535,
+        0.8828
       ],
-      "avg_implied_prob": 0.371,
-      "avg_model_prob": 0.4307,
-      "roi": 0.8552,
-      "profit_units": 8.98,
-      "brier": 0.2791,
+      "avg_implied_prob": 0.3713,
+      "avg_model_prob": 0.4277,
+      "roi": 1.0185,
+      "profit_units": 13.24,
+      "brier": 0.2923,
       "avg_clv": 0.0803
     },
     {
       "key": "role:favorite",
-      "n": 1,
-      "wins": 1,
-      "losses": 0,
+      "n": 3,
+      "wins": 2,
+      "losses": 1,
       "pushes": 0,
-      "hit_rate": 1,
+      "hit_rate": 0.6667,
       "hit_rate_ci": [
-        0.2065,
-        1
+        0.2077,
+        0.9385
       ],
-      "avg_implied_prob": 0.6047,
-      "avg_model_prob": 0.6628,
-      "roi": 0.6536,
-      "profit_units": 0.65,
-      "brier": 0.1137,
+      "avg_implied_prob": 0.5602,
+      "avg_model_prob": 0.6214,
+      "roi": 0.1352,
+      "profit_units": 0.41,
+      "brier": 0.1917,
       "avg_clv": null
     },
     {
       "key": "role:underdog",
-      "n": 19,
-      "wins": 10,
-      "losses": 9,
+      "n": 26,
+      "wins": 13,
+      "losses": 13,
       "pushes": 0,
-      "hit_rate": 0.5263,
+      "hit_rate": 0.5,
       "hit_rate_ci": [
-        0.3171,
-        0.7267
+        0.3206,
+        0.6794
       ],
-      "avg_implied_prob": 0.3477,
-      "avg_model_prob": 0.3973,
-      "roi": 0.5176,
-      "profit_units": 8.8,
-      "brier": 0.2106,
+      "avg_implied_prob": 0.3205,
+      "avg_model_prob": 0.3637,
+      "roi": 0.48,
+      "profit_units": 10.56,
+      "brier": 0.1976,
       "avg_clv": 0.0701
+    },
+    {
+      "key": "sport:NBA",
+      "n": 5,
+      "wins": 1,
+      "losses": 4,
+      "pushes": 0,
+      "hit_rate": 0.2,
+      "hit_rate_ci": [
+        0.0362,
+        0.6245
+      ],
+      "avg_implied_prob": 0.1984,
+      "avg_model_prob": 0.2094,
+      "roi": -0.5633,
+      "profit_units": -1.69,
+      "brier": 0.0967,
+      "avg_clv": null
     },
     {
       "key": "sport:NFL",
@@ -287,21 +305,39 @@
     },
     {
       "key": "sport:NHL",
-      "n": 14,
-      "wins": 11,
-      "losses": 3,
+      "n": 18,
+      "wins": 14,
+      "losses": 4,
       "pushes": 0,
-      "hit_rate": 0.7857,
+      "hit_rate": 0.7778,
       "hit_rate_ci": [
-        0.5241,
-        0.9243
+        0.5478,
+        0.91
       ],
-      "avg_implied_prob": 0.4108,
-      "avg_model_prob": 0.4754,
-      "roi": 0.961,
-      "profit_units": 13.45,
-      "brier": 0.263,
+      "avg_implied_prob": 0.4201,
+      "avg_model_prob": 0.4843,
+      "roi": 0.9253,
+      "profit_units": 16.66,
+      "brier": 0.2664,
       "avg_clv": 0.0701
+    },
+    {
+      "key": "sport+role:NBA/underdog",
+      "n": 5,
+      "wins": 1,
+      "losses": 4,
+      "pushes": 0,
+      "hit_rate": 0.2,
+      "hit_rate_ci": [
+        0.0362,
+        0.6245
+      ],
+      "avg_implied_prob": 0.1984,
+      "avg_model_prob": 0.2094,
+      "roi": -0.5633,
+      "profit_units": -1.69,
+      "brier": 0.0967,
+      "avg_clv": null
     },
     {
       "key": "sport+role:NFL/underdog",
@@ -323,40 +359,40 @@
     },
     {
       "key": "sport+role:NHL/favorite",
-      "n": 1,
-      "wins": 1,
-      "losses": 0,
+      "n": 3,
+      "wins": 2,
+      "losses": 1,
       "pushes": 0,
-      "hit_rate": 1,
+      "hit_rate": 0.6667,
       "hit_rate_ci": [
-        0.2065,
-        1
+        0.2077,
+        0.9385
       ],
-      "avg_implied_prob": 0.6047,
-      "avg_model_prob": 0.6628,
-      "roi": 0.6536,
-      "profit_units": 0.65,
-      "brier": 0.1137,
+      "avg_implied_prob": 0.5602,
+      "avg_model_prob": 0.6214,
+      "roi": 0.1352,
+      "profit_units": 0.41,
+      "brier": 0.1917,
       "avg_clv": null
     },
     {
       "key": "sport+role:NHL/underdog",
-      "n": 13,
-      "wins": 10,
+      "n": 15,
+      "wins": 12,
       "losses": 3,
       "pushes": 0,
-      "hit_rate": 0.7692,
+      "hit_rate": 0.8,
       "hit_rate_ci": [
-        0.4974,
-        0.9182
+        0.5481,
+        0.9295
       ],
-      "avg_implied_prob": 0.3959,
-      "avg_model_prob": 0.461,
-      "roi": 0.9846,
-      "profit_units": 12.8,
-      "brier": 0.2745,
+      "avg_implied_prob": 0.3921,
+      "avg_model_prob": 0.4568,
+      "roi": 1.0833,
+      "profit_units": 16.25,
+      "brier": 0.2813,
       "avg_clv": 0.0701
     }
   ],
-  "note": "Only 20 graded picks; no segment is flagged until it has 50+ results."
+  "note": "Only 29 graded picks; no segment is flagged until it has 50+ results."
 }
