@@ -20,10 +20,10 @@
         "unresolved": 15
       },
       "NHL": {
-        "resolved": 22,
+        "resolved": 29,
         "stale": 0,
         "tracked": 33,
-        "unresolved": 11
+        "unresolved": 4
       },
       "Soccer": {
         "resolved": 22,
@@ -39,26 +39,26 @@
       }
     },
     "legs": {
-      "pending": 56,
+      "pending": 50,
       "total": 100
     },
     "overall": {
-      "resolved": 138,
+      "resolved": 145,
       "stale": 0,
       "tracked": 272,
-      "unresolved": 134
+      "unresolved": 127
     }
   },
   "data_mode": "live",
   "errors": [],
-  "generated_at": "2026-11-03T11:56:58.673Z",
+  "generated_at": "2026-11-04T03:03:39.052Z",
   "last_evening_results_run": {
-    "at": "2026-11-03T03:57:14.331Z",
-    "et_date": "2026-11-02",
+    "at": "2026-11-04T03:03:39.052Z",
+    "et_date": "2026-11-03",
     "graded_legs": 6,
     "ok": true,
-    "quota_remaining": 376,
-    "resolved_games": 13
+    "quota_remaining": 318,
+    "resolved_games": 7
   },
   "last_pick_run": {
     "at": "2026-11-03T11:56:58.673Z",
@@ -77,6 +77,6 @@
     "resolved_games": 8
   },
   "last_successful_pick_run": "2026-11-03T11:56:58.673Z",
-  "last_successful_results_run": "2026-11-03T11:56:56.466Z",
+  "last_successful_results_run": "2026-11-04T03:03:39.052Z",
   "schema": 1
 }
