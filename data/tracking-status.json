@@ -8,10 +8,10 @@
         "unresolved": 0
       },
       "NBA": {
-        "resolved": 47,
+        "resolved": 54,
         "stale": 0,
         "tracked": 79,
-        "unresolved": 32
+        "unresolved": 25
       },
       "NFL": {
         "resolved": 28,
@@ -20,10 +20,10 @@
         "unresolved": 29
       },
       "NHL": {
-        "resolved": 33,
+        "resolved": 35,
         "stale": 0,
         "tracked": 37,
-        "unresolved": 4
+        "unresolved": 2
       },
       "Soccer": {
         "resolved": 22,
@@ -39,26 +39,26 @@
       }
     },
     "legs": {
-      "pending": 71,
+      "pending": 67,
       "total": 125
     },
     "overall": {
-      "resolved": 149,
+      "resolved": 158,
       "stale": 0,
       "tracked": 299,
-      "unresolved": 150
+      "unresolved": 141
     }
   },
   "data_mode": "live",
   "errors": [],
-  "generated_at": "2026-11-04T12:10:46.814Z",
+  "generated_at": "2026-11-05T03:33:32.218Z",
   "last_evening_results_run": {
-    "at": "2026-11-04T03:03:39.052Z",
-    "et_date": "2026-11-03",
-    "graded_legs": 6,
+    "at": "2026-11-05T03:33:32.218Z",
+    "et_date": "2026-11-04",
+    "graded_legs": 4,
     "ok": true,
-    "quota_remaining": 318,
-    "resolved_games": 7
+    "quota_remaining": 262,
+    "resolved_games": 9
   },
   "last_pick_run": {
     "at": "2026-11-04T12:10:46.814Z",
@@ -77,6 +77,6 @@
     "resolved_games": 4
   },
   "last_successful_pick_run": "2026-11-04T12:10:46.814Z",
-  "last_successful_results_run": "2026-11-04T12:10:44.269Z",
+  "last_successful_results_run": "2026-11-05T03:33:32.218Z",
   "schema": 1
 }
