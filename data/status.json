@@ -1,13 +1,14 @@
 {
-  "checked_at": "2026-11-05T12:23:53.542Z",
-  "et_date": "2026-11-05",
+  "checked_at": "2026-11-06T12:08:33.819Z",
+  "et_date": "2026-11-06",
   "model_version": "consensus-devig-v1",
   "legs": 25,
   "sports": [
+    "Soccer",
     "NHL",
+    "NBA",
     "UFC",
-    "NFL",
-    "Soccer"
+    "NFL"
   ],
   "fetch_failures": [],
   "cut_segments": [],
