@@ -52,10 +52,10 @@
   "data_mode": "live",
   "errors": [
     {
-      "message": "7 game(s) still unresolved >8h after start"
+      "message": "23 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-11-08T02:33:32.541Z",
+  "generated_at": "2026-11-08T11:17:24.890Z",
   "last_evening_results_run": {
     "at": "2026-11-08T02:33:32.541Z",
     "et_date": "2026-11-07",
@@ -70,8 +70,8 @@
     "passed_games": 8
   },
   "last_results_run": {
-    "at": "2026-11-07T11:05:24.381Z",
-    "et_date": "2026-11-07",
+    "at": "2026-11-08T11:17:24.890Z",
+    "et_date": "2026-11-08",
     "ok": false
   },
   "last_successful_pick_run": "2026-11-06T12:08:35.077Z",
