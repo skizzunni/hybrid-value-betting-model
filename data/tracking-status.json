@@ -33,7 +33,7 @@
       },
       "UFC": {
         "resolved": 15,
-        "stale": 24,
+        "stale": 25,
         "tracked": 86,
         "unresolved": 71
       }
@@ -44,7 +44,7 @@
     },
     "overall": {
       "resolved": 217,
-      "stale": 24,
+      "stale": 25,
       "tracked": 328,
       "unresolved": 111
     }
@@ -55,10 +55,10 @@
       "message": "25 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-11-10T12:41:17.901Z",
+  "generated_at": "2026-11-11T02:52:03.959Z",
   "last_evening_results_run": {
-    "at": "2026-11-10T04:40:29.689Z",
-    "et_date": "2026-11-09",
+    "at": "2026-11-11T02:52:03.959Z",
+    "et_date": "2026-11-10",
     "ok": false
   },
   "last_pick_run": {
