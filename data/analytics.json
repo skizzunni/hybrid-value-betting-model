@@ -37,19 +37,19 @@
         "unresolved": 10
       },
       "UFC": {
-        "pct_resolved": 0.186,
-        "resolved": 16,
-        "stale": 24,
+        "pct_resolved": 0.4419,
+        "resolved": 38,
+        "stale": 2,
         "tracked": 86,
-        "unresolved": 70
+        "unresolved": 48
       }
     },
     "overall": {
-      "pct_resolved": 0.6738,
-      "resolved": 221,
-      "stale": 24,
+      "pct_resolved": 0.7409,
+      "resolved": 243,
+      "stale": 2,
       "tracked": 328,
-      "unresolved": 107
+      "unresolved": 85
     }
   },
   "disclaimer": "Tracking measures past performance; it does not guarantee future profit. Parlays are high variance and 25-leg tickets are entertainment.",
@@ -186,18 +186,18 @@
       }
     }
   },
-  "generated_at": "2026-11-14T11:29:48.481Z",
+  "generated_at": "2026-11-15T02:49:58.289Z",
   "min_sample": 50,
   "picks": {
     "clv": {
-      "avg_clv_pct": 20.81,
-      "beat_close_rate": 1,
-      "lost_to_close": 0,
-      "n": 118
+      "avg_clv_pct": 18.77,
+      "beat_close_rate": 0.9706,
+      "lost_to_close": 3,
+      "n": 136
     },
     "hit_rate": 0.2913,
     "legs_graded": 103,
-    "legs_push_or_void": 15,
+    "legs_push_or_void": 33,
     "legs_total": 175,
     "linked_legs_missing_game": 0,
     "lose_conditions": [],
