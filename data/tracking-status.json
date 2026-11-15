@@ -32,30 +32,30 @@
         "unresolved": 10
       },
       "UFC": {
-        "resolved": 38,
-        "stale": 2,
+        "resolved": 49,
+        "stale": 1,
         "tracked": 86,
-        "unresolved": 48
+        "unresolved": 37
       }
     },
     "legs": {
-      "pending": 39,
+      "pending": 38,
       "total": 175
     },
     "overall": {
-      "resolved": 243,
-      "stale": 2,
+      "resolved": 254,
+      "stale": 1,
       "tracked": 328,
-      "unresolved": 85
+      "unresolved": 74
     }
   },
   "data_mode": "live",
   "errors": [
     {
-      "message": "2 game(s) still unresolved >8h after start"
+      "message": "4 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-11-15T02:49:58.289Z",
+  "generated_at": "2026-11-15T11:58:04.410Z",
   "last_evening_results_run": {
     "at": "2026-11-15T02:49:58.289Z",
     "et_date": "2026-11-14",
@@ -70,8 +70,8 @@
     "passed_games": 8
   },
   "last_results_run": {
-    "at": "2026-11-14T11:29:48.481Z",
-    "et_date": "2026-11-14",
+    "at": "2026-11-15T11:58:04.410Z",
+    "et_date": "2026-11-15",
     "ok": false
   },
   "last_successful_pick_run": "2026-11-06T12:08:35.077Z",
