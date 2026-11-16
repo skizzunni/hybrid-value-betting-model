@@ -16,11 +16,11 @@
         "unresolved": 14
       },
       "NFL": {
-        "pct_resolved": 0.7719,
-        "resolved": 44,
+        "pct_resolved": 0.9649,
+        "resolved": 55,
         "stale": 0,
         "tracked": 57,
-        "unresolved": 13
+        "unresolved": 2
       },
       "NHL": {
         "pct_resolved": 1,
@@ -37,37 +37,37 @@
         "unresolved": 10
       },
       "UFC": {
-        "pct_resolved": 0.5698,
-        "resolved": 49,
-        "stale": 1,
+        "pct_resolved": 0.5814,
+        "resolved": 50,
+        "stale": 0,
         "tracked": 86,
-        "unresolved": 37
+        "unresolved": 36
       }
     },
     "overall": {
-      "pct_resolved": 0.7744,
-      "resolved": 254,
-      "stale": 1,
+      "pct_resolved": 0.811,
+      "resolved": 266,
+      "stale": 0,
       "tracked": 328,
-      "unresolved": 74
+      "unresolved": 62
     }
   },
   "disclaimer": "Tracking measures past performance; it does not guarantee future profit. Parlays are high variance and 25-leg tickets are entertainment.",
   "games": {
     "favorite_vs_underdog": {
       "draws": 3,
-      "favorite_win_rate": 0.6646,
-      "favorite_wins": 105,
-      "n": 158,
-      "underdog_wins": 50
+      "favorite_win_rate": 0.6686,
+      "favorite_wins": 113,
+      "n": 169,
+      "underdog_wins": 53
     },
-    "games_resolved": 159,
+    "games_resolved": 170,
     "home_away": {
-      "away_wins": 73,
+      "away_wins": 81,
       "draws": 3,
-      "home_win_rate": 0.522,
-      "home_wins": 83,
-      "n": 159
+      "home_win_rate": 0.5059,
+      "home_wins": 86,
+      "n": 170
     },
     "market_calibration": {
       "0-10%": {
@@ -76,76 +76,76 @@
         "n": 11
       },
       "10-20%": {
-        "actual": 0.0154,
-        "market_prob": 0.1802,
-        "n": 65
+        "actual": 0.0152,
+        "market_prob": 0.1805,
+        "n": 66
       },
       "20-30%": {
-        "actual": 0.2609,
-        "market_prob": 0.2583,
-        "n": 46
+        "actual": 0.25,
+        "market_prob": 0.2574,
+        "n": 48
       },
       "30-40%": {
-        "actual": 0.3514,
-        "market_prob": 0.3568,
-        "n": 74
+        "actual": 0.3462,
+        "market_prob": 0.3565,
+        "n": 78
       },
       "40-50%": {
-        "actual": 0.473,
-        "market_prob": 0.4458,
-        "n": 74
+        "actual": 0.4744,
+        "market_prob": 0.4464,
+        "n": 78
       },
       "50-60%": {
-        "actual": 0.5745,
-        "market_prob": 0.5478,
-        "n": 47
+        "actual": 0.5686,
+        "market_prob": 0.5474,
+        "n": 51
       },
       "60-70%": {
-        "actual": 0.7632,
-        "market_prob": 0.6358,
-        "n": 38
+        "actual": 0.7619,
+        "market_prob": 0.637,
+        "n": 42
       },
       "70-80%": {
-        "actual": 0.7778,
-        "market_prob": 0.7401,
-        "n": 18
+        "actual": 0.8,
+        "market_prob": 0.7425,
+        "n": 20
       },
       "80-90%": {
-        "actual": 0.9333,
-        "market_prob": 0.8312,
-        "n": 15
+        "actual": 0.9375,
+        "market_prob": 0.8296,
+        "n": 16
       }
     },
     "price_buckets": {
       "dog (+150 to +299)": {
-        "hit_rate": 0.2206,
-        "n": 68,
-        "roi": -0.3206
+        "hit_rate": 0.2222,
+        "n": 72,
+        "roi": -0.3217
       },
       "fav (-299 to -150)": {
-        "hit_rate": 0.7391,
-        "n": 69,
-        "roi": 0.1104
+        "hit_rate": 0.7297,
+        "n": 74,
+        "roi": 0.0947
       },
       "heavy fav (<= -300)": {
-        "hit_rate": 0.8276,
-        "n": 29,
-        "roi": -0.0122
+        "hit_rate": 0.8438,
+        "n": 32,
+        "roi": 0.0094
       },
       "long shot (>= +300)": {
-        "hit_rate": 0.0575,
-        "n": 87,
-        "roi": -0.3926
+        "hit_rate": 0.0562,
+        "n": 89,
+        "roi": -0.4063
       },
       "slight dog (+100 to +149)": {
-        "hit_rate": 0.4179,
-        "n": 67,
-        "roi": -0.076
+        "hit_rate": 0.4085,
+        "n": 71,
+        "roi": -0.0963
       },
       "slight fav (-149 to -101)": {
-        "hit_rate": 0.5294,
-        "n": 68,
-        "roi": -0.0396
+        "hit_rate": 0.5417,
+        "n": 72,
+        "roi": -0.0162
       }
     },
     "totals_over_under": {
@@ -164,11 +164,11 @@
         "under": 33
       },
       "NFL": {
-        "n": 29,
-        "over": 13,
-        "over_rate": 0.4483,
+        "n": 40,
+        "over": 18,
+        "over_rate": 0.45,
         "push": 0,
-        "under": 16
+        "under": 22
       },
       "NHL": {
         "n": 48,
@@ -193,25 +193,25 @@
       }
     }
   },
-  "generated_at": "2026-11-15T11:58:04.410Z",
+  "generated_at": "2026-11-16T02:51:56.147Z",
   "min_sample": 50,
   "picks": {
     "clv": {
-      "avg_clv_pct": 18.69,
-      "beat_close_rate": 0.9708,
+      "avg_clv_pct": 18.39,
+      "beat_close_rate": 0.972,
       "lost_to_close": 3,
-      "n": 137
+      "n": 143
     },
-    "hit_rate": 0.2981,
-    "legs_graded": 104,
+    "hit_rate": 0.2818,
+    "legs_graded": 110,
     "legs_push_or_void": 33,
     "legs_total": 175,
     "linked_legs_missing_game": 0,
     "lose_conditions": [],
     "model_vs_market": {
-      "market_brier": 0.1573,
-      "model_brier": 0.1519,
-      "n": 104
+      "market_brier": 0.1508,
+      "model_brier": 0.1461,
+      "n": 110
     },
     "passed_games": {
       "not_selected": {
@@ -221,7 +221,7 @@
         "underdog_won": 15
       }
     },
-    "roi": -0.2383,
+    "roi": -0.2799,
     "segments": [
       {
         "break_even": 0.3875,
@@ -236,15 +236,15 @@
         "wins": 25
       },
       {
-        "break_even": 0.2537,
+        "break_even": 0.2445,
         "dimension": "sport",
         "flag": "insufficient_sample",
-        "hit_rate": 0.0645,
-        "n": 31,
-        "roi": -0.8968,
+        "hit_rate": 0.0541,
+        "n": 37,
+        "roi": -0.9135,
         "value": "NFL",
-        "wilson_lower": 0.0179,
-        "wilson_upper": 0.2072,
+        "wilson_lower": 0.015,
+        "wilson_upper": 0.177,
         "wins": 2
       },
       {
@@ -284,27 +284,27 @@
         "wins": 1
       },
       {
-        "break_even": 0.3011,
+        "break_even": 0.2954,
         "dimension": "market",
         "flag": "inconclusive",
-        "hit_rate": 0.2981,
-        "n": 104,
-        "roi": -0.2383,
+        "hit_rate": 0.2818,
+        "n": 110,
+        "roi": -0.2799,
         "value": "moneyline",
-        "wilson_lower": 0.2186,
-        "wilson_upper": 0.3919,
+        "wilson_lower": 0.2062,
+        "wilson_upper": 0.3722,
         "wins": 31
       },
       {
-        "break_even": 0.2794,
+        "break_even": 0.2745,
         "dimension": "side",
         "flag": "inconclusive",
-        "hit_rate": 0.2708,
-        "n": 96,
-        "roi": -0.2643,
+        "hit_rate": 0.2549,
+        "n": 102,
+        "roi": -0.3075,
         "value": "underdog",
-        "wilson_lower": 0.192,
-        "wilson_upper": 0.3673,
+        "wilson_lower": 0.1803,
+        "wilson_upper": 0.3473,
         "wins": 26
       },
       {
@@ -344,15 +344,15 @@
         "wins": 8
       },
       {
-        "break_even": 0.1767,
+        "break_even": 0.1793,
         "dimension": "price_bucket",
         "flag": "insufficient_sample",
         "hit_rate": 0,
-        "n": 40,
+        "n": 46,
         "roi": -1,
         "value": "long shot (>= +300)",
         "wilson_lower": 0,
-        "wilson_upper": 0.0876,
+        "wilson_upper": 0.0771,
         "wins": 0
       },
       {
