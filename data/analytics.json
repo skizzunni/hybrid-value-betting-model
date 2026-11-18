@@ -16,11 +16,11 @@
         "unresolved": 14
       },
       "NFL": {
-        "pct_resolved": 0.9825,
-        "resolved": 56,
+        "pct_resolved": 1,
+        "resolved": 57,
         "stale": 0,
         "tracked": 57,
-        "unresolved": 1
+        "unresolved": 0
       },
       "NHL": {
         "pct_resolved": 1,
@@ -39,35 +39,35 @@
       "UFC": {
         "pct_resolved": 0.5814,
         "resolved": 50,
-        "stale": 0,
+        "stale": 3,
         "tracked": 86,
         "unresolved": 36
       }
     },
     "overall": {
-      "pct_resolved": 0.814,
-      "resolved": 267,
-      "stale": 0,
+      "pct_resolved": 0.8171,
+      "resolved": 268,
+      "stale": 3,
       "tracked": 328,
-      "unresolved": 61
+      "unresolved": 60
     }
   },
   "disclaimer": "Tracking measures past performance; it does not guarantee future profit. Parlays are high variance and 25-leg tickets are entertainment.",
   "games": {
     "favorite_vs_underdog": {
       "draws": 3,
-      "favorite_win_rate": 0.6706,
+      "favorite_win_rate": 0.6667,
       "favorite_wins": 114,
-      "n": 170,
-      "underdog_wins": 53
+      "n": 171,
+      "underdog_wins": 54
     },
-    "games_resolved": 171,
+    "games_resolved": 172,
     "home_away": {
-      "away_wins": 81,
+      "away_wins": 82,
       "draws": 3,
-      "home_win_rate": 0.5088,
+      "home_win_rate": 0.5058,
       "home_wins": 87,
-      "n": 171
+      "n": 172
     },
     "market_calibration": {
       "0-10%": {
@@ -91,14 +91,14 @@
         "n": 79
       },
       "40-50%": {
-        "actual": 0.4744,
-        "market_prob": 0.4464,
-        "n": 78
+        "actual": 0.481,
+        "market_prob": 0.4468,
+        "n": 79
       },
       "50-60%": {
-        "actual": 0.5686,
-        "market_prob": 0.5474,
-        "n": 51
+        "actual": 0.5577,
+        "market_prob": 0.5469,
+        "n": 52
       },
       "60-70%": {
         "actual": 0.7674,
@@ -138,14 +138,14 @@
         "roi": -0.4063
       },
       "slight dog (+100 to +149)": {
-        "hit_rate": 0.4028,
-        "n": 72,
-        "roi": -0.1089
+        "hit_rate": 0.411,
+        "n": 73,
+        "roi": -0.0937
       },
       "slight fav (-149 to -101)": {
-        "hit_rate": 0.5417,
-        "n": 72,
-        "roi": -0.0162
+        "hit_rate": 0.5342,
+        "n": 73,
+        "roi": -0.0297
       }
     },
     "totals_over_under": {
@@ -164,9 +164,9 @@
         "under": 33
       },
       "NFL": {
-        "n": 41,
-        "over": 19,
-        "over_rate": 0.4634,
+        "n": 42,
+        "over": 20,
+        "over_rate": 0.4762,
         "push": 0,
         "under": 22
       },
@@ -193,7 +193,7 @@
       }
     }
   },
-  "generated_at": "2026-11-16T12:47:11.409Z",
+  "generated_at": "2026-11-18T04:33:38.177Z",
   "min_sample": 50,
   "picks": {
     "clv": {

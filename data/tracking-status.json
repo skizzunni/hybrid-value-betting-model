@@ -14,10 +14,10 @@
         "unresolved": 14
       },
       "NFL": {
-        "resolved": 56,
+        "resolved": 57,
         "stale": 0,
         "tracked": 57,
-        "unresolved": 1
+        "unresolved": 0
       },
       "NHL": {
         "resolved": 51,
@@ -33,7 +33,7 @@
       },
       "UFC": {
         "resolved": 50,
-        "stale": 0,
+        "stale": 3,
         "tracked": 86,
         "unresolved": 36
       }
@@ -43,10 +43,10 @@
       "total": 175
     },
     "overall": {
-      "resolved": 267,
-      "stale": 0,
+      "resolved": 268,
+      "stale": 3,
       "tracked": 328,
-      "unresolved": 61
+      "unresolved": 60
     }
   },
   "data_mode": "live",
@@ -55,10 +55,10 @@
       "message": "3 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-11-16T12:47:11.409Z",
+  "generated_at": "2026-11-18T04:33:38.177Z",
   "last_evening_results_run": {
-    "at": "2026-11-16T02:51:56.147Z",
-    "et_date": "2026-11-15",
+    "at": "2026-11-18T04:33:38.177Z",
+    "et_date": "2026-11-17",
     "ok": false
   },
   "last_pick_run": {
