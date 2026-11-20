@@ -55,7 +55,7 @@
       "message": "3 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-11-20T04:03:34.498Z",
+  "generated_at": "2026-11-20T12:55:33.497Z",
   "last_evening_results_run": {
     "at": "2026-11-20T04:03:34.498Z",
     "et_date": "2026-11-19",
@@ -70,8 +70,8 @@
     "passed_games": 8
   },
   "last_results_run": {
-    "at": "2026-11-16T12:47:11.409Z",
-    "et_date": "2026-11-16",
+    "at": "2026-11-20T12:55:33.497Z",
+    "et_date": "2026-11-20",
     "ok": false
   },
   "last_successful_pick_run": "2026-11-06T12:08:35.077Z",
