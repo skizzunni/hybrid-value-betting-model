@@ -8,10 +8,10 @@
         "unresolved": 0
       },
       "NBA": {
-        "resolved": 74,
+        "resolved": 75,
         "stale": 0,
         "tracked": 88,
-        "unresolved": 14
+        "unresolved": 13
       },
       "NFL": {
         "resolved": 57,
@@ -43,10 +43,10 @@
       "total": 175
     },
     "overall": {
-      "resolved": 268,
+      "resolved": 269,
       "stale": 3,
       "tracked": 328,
-      "unresolved": 60
+      "unresolved": 59
     }
   },
   "data_mode": "live",
@@ -55,10 +55,10 @@
       "message": "3 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-11-20T12:55:33.497Z",
+  "generated_at": "2026-11-21T04:03:13.810Z",
   "last_evening_results_run": {
-    "at": "2026-11-20T04:03:34.498Z",
-    "et_date": "2026-11-19",
+    "at": "2026-11-21T04:03:13.810Z",
+    "et_date": "2026-11-20",
     "ok": false
   },
   "last_pick_run": {

@@ -9,11 +9,11 @@
         "unresolved": 0
       },
       "NBA": {
-        "pct_resolved": 0.8409,
-        "resolved": 74,
+        "pct_resolved": 0.8523,
+        "resolved": 75,
         "stale": 0,
         "tracked": 88,
-        "unresolved": 14
+        "unresolved": 13
       },
       "NFL": {
         "pct_resolved": 1,
@@ -45,29 +45,29 @@
       }
     },
     "overall": {
-      "pct_resolved": 0.8171,
-      "resolved": 268,
+      "pct_resolved": 0.8201,
+      "resolved": 269,
       "stale": 3,
       "tracked": 328,
-      "unresolved": 60
+      "unresolved": 59
     }
   },
   "disclaimer": "Tracking measures past performance; it does not guarantee future profit. Parlays are high variance and 25-leg tickets are entertainment.",
   "games": {
     "favorite_vs_underdog": {
       "draws": 3,
-      "favorite_win_rate": 0.6667,
+      "favorite_win_rate": 0.6628,
       "favorite_wins": 114,
-      "n": 171,
-      "underdog_wins": 54
+      "n": 172,
+      "underdog_wins": 55
     },
-    "games_resolved": 172,
+    "games_resolved": 173,
     "home_away": {
-      "away_wins": 82,
+      "away_wins": 83,
       "draws": 3,
-      "home_win_rate": 0.5058,
+      "home_win_rate": 0.5029,
       "home_wins": 87,
-      "n": 172
+      "n": 173
     },
     "market_calibration": {
       "0-10%": {
@@ -91,14 +91,14 @@
         "n": 79
       },
       "40-50%": {
-        "actual": 0.481,
-        "market_prob": 0.4468,
-        "n": 79
+        "actual": 0.4875,
+        "market_prob": 0.4474,
+        "n": 80
       },
       "50-60%": {
-        "actual": 0.5577,
-        "market_prob": 0.5469,
-        "n": 52
+        "actual": 0.5472,
+        "market_prob": 0.5462,
+        "n": 53
       },
       "60-70%": {
         "actual": 0.7674,
@@ -143,9 +143,9 @@
         "roi": -0.0937
       },
       "slight fav (-149 to -101)": {
-        "hit_rate": 0.5342,
-        "n": 73,
-        "roi": -0.0297
+        "hit_rate": 0.5333,
+        "n": 75,
+        "roi": -0.0295
       }
     },
     "totals_over_under": {
@@ -157,11 +157,11 @@
         "under": 1
       },
       "NBA": {
-        "n": 56,
+        "n": 57,
         "over": 23,
-        "over_rate": 0.4107,
+        "over_rate": 0.4035,
         "push": 0,
-        "under": 33
+        "under": 34
       },
       "NFL": {
         "n": 42,
@@ -193,7 +193,7 @@
       }
     }
   },
-  "generated_at": "2026-11-20T12:55:33.497Z",
+  "generated_at": "2026-11-21T04:03:13.810Z",
   "min_sample": 50,
   "picks": {
     "clv": {
