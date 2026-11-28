@@ -8,10 +8,10 @@
         "unresolved": 0
       },
       "NBA": {
-        "resolved": 76,
-        "stale": 0,
+        "resolved": 80,
+        "stale": 2,
         "tracked": 88,
-        "unresolved": 12
+        "unresolved": 8
       },
       "NFL": {
         "resolved": 57,
@@ -27,13 +27,13 @@
       },
       "Soccer": {
         "resolved": 41,
-        "stale": 0,
+        "stale": 1,
         "tracked": 42,
         "unresolved": 1
       },
       "UFC": {
         "resolved": 56,
-        "stale": 0,
+        "stale": 3,
         "tracked": 86,
         "unresolved": 30
       }
@@ -43,22 +43,22 @@
       "total": 175
     },
     "overall": {
-      "resolved": 285,
-      "stale": 0,
+      "resolved": 289,
+      "stale": 6,
       "tracked": 328,
-      "unresolved": 43
+      "unresolved": 39
     }
   },
   "data_mode": "live",
   "errors": [
     {
-      "message": "3 game(s) still unresolved >8h after start"
+      "message": "scores failed for NBA (espn): ESPN NBA 20261124-20261129 failed: 400 Bad Request | scores failed for Soccer (espn): ESPN Soccer 20261122-20261124 failed: 400 Bad Request | 6 game(s) still unresolved >8h after start"
     }
   ],
-  "generated_at": "2026-11-23T03:48:22.872Z",
+  "generated_at": "2026-11-28T04:46:20.819Z",
   "last_evening_results_run": {
-    "at": "2026-11-23T03:48:22.872Z",
-    "et_date": "2026-11-22",
+    "at": "2026-11-28T04:46:20.819Z",
+    "et_date": "2026-11-27",
     "ok": false
   },
   "last_pick_run": {
